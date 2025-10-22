@@ -61,29 +61,6 @@ This frontend is built to showcase a professional, creative, and interactive des
 
 ---
 
-## 📂 Folder Structure
-/src
-├── components/ # Reusable UI components (Navbar, Footer, Cards, Modals)
-├── pages/ # Multi-page components
-│ ├── Home.jsx
-│ ├── About.jsx
-│ ├── Features.jsx
-│ ├── Dashboard.jsx
-│ ├── Groups.jsx
-│ ├── Chat.jsx
-│ ├── Scheduler.jsx
-│ ├── Leaderboard.jsx
-│ ├── Profile.jsx
-│ ├── Contact.jsx
-│ ├── Login.jsx
-│ └── Signup.jsx
-├── assets/ # Images, icons, animations
-├── styles/ # Tailwind or custom styles
-└── App.jsx # Main app routing & layout
-
-
----
-
 ## 📐 Design Principles
 - **User-Centered Design:** Focused on student needs and study collaboration  
 - **Creativity & Modern UI:** Glassmorphism, blur, 3D effects, micro-interactions  
