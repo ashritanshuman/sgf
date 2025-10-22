@@ -120,12 +120,7 @@ const Home = () => {
             </Link>
           </motion.div>
 
-          <motion.div
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.7, duration: 1 }}
-            className="mt-20 relative"
-          >
+          <div className="mt-20 relative">
             <div className="glass-card max-w-4xl mx-auto p-8 glow">
               <div className="grid grid-cols-3 gap-8 text-center">
                 <div>
@@ -142,7 +137,7 @@ const Home = () => {
                 </div>
               </div>
             </div>
-          </motion.div>
+          </div>
         </motion.div>
       </section>
 
