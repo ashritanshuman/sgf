@@ -168,7 +168,7 @@ const Home = () => {
                 className="glass-card group cursor-pointer glow-hover"
               >
                 <div className="p-3 rounded-xl bg-gradient-to-br from-primary to-secondary w-fit mb-4 group-hover:scale-110 transition-transform">
-                  <feature.icon className="h-6 w-6 text-icon-accent" />
+                  <feature.icon className="h-6 w-6 text-black" />
                 </div>
                 <h3 className="text-xl font-bold mb-2">{feature.title}</h3>
                 <p className="text-muted-foreground">{feature.description}</p>
