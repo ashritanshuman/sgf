@@ -35,7 +35,7 @@ const Navbar = () => {
         <div className="flex items-center justify-between">
           <Link to="/" className="flex items-center gap-2 group">
             <div className="p-2 rounded-xl bg-gradient-to-br from-primary to-secondary glow-hover">
-              <GraduationCap className="h-6 w-6 text-white" />
+              <GraduationCap className="h-6 w-6 text-black" />
             </div>
             <span className="text-xl font-bold gradient-text">Study Group Finder</span>
           </Link>
