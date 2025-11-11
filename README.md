@@ -1,4 +1,5 @@
-# 🎓 Study Group Finder
+# 🎓 Study Group Finder--- By TEAM PHONEIX ITM UNIV. GWALIOR
+# ASHRIT ANSHUMAN PRADHAN , AMREESH SHARMA & CHAITANYA SHARMA
 
 A **modern, multi-page, responsive frontend website** for a platform that connects students with similar academic interests, goals, and learning difficulties. The website is designed to provide a **smooth, engaging, and futuristic experience** with **glassmorphism UI, blur effects, 3D scroll animations, and subtle motion transitions**.  
 
