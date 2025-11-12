@@ -4,12 +4,12 @@ import { GraduationCap, Mail, Github, Twitter, Linkedin } from "lucide-react";
 const Footer = () => {
   return (
     <footer className="glass border-t border-white/10 mt-20">
-      <div className="container mx-auto px-4 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+      <div className="container mx-auto px-4 py-8 sm:py-12">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8">
           <div className="space-y-4">
             <div className="flex items-center gap-2">
               <div className="p-2 rounded-xl bg-gradient-to-br from-primary to-secondary">
-                <GraduationCap className="h-5 w-5 text-white" />
+                <GraduationCap className="h-5 w-5 text-primary-foreground" />
               </div>
               <span className="font-bold gradient-text">Study Group Finder</span>
             </div>

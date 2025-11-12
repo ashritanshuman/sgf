@@ -31,13 +31,13 @@ const Navbar = () => {
       animate={{ y: 0 }}
       className="fixed top-0 left-0 right-0 z-50 glass border-b border-white/10"
     >
-      <div className="container mx-auto px-4 py-4">
+      <div className="container mx-auto px-3 sm:px-4 py-3 sm:py-4">
         <div className="flex items-center justify-between">
           <Link to="/" className="flex items-center gap-2 group">
-            <div className="p-2 rounded-xl bg-gradient-to-br from-primary to-secondary glow-hover">
-              <GraduationCap className="h-6 w-6 text-primary-foreground" />
+            <div className="p-1.5 sm:p-2 rounded-xl bg-gradient-to-br from-primary to-secondary glow-hover">
+              <GraduationCap className="h-5 w-5 sm:h-6 sm:w-6 text-primary-foreground" />
             </div>
-            <span className="text-xl font-bold gradient-text">Study Group Finder</span>
+            <span className="text-lg sm:text-xl font-bold gradient-text">Study Group Finder</span>
           </Link>
 
           {/* Desktop Navigation */}

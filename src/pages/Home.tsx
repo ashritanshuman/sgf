@@ -108,31 +108,31 @@ const Home = () => {
             transition={{ delay: 0.5, duration: 0.8 }}
             className="flex flex-col sm:flex-row gap-4 justify-center"
           >
-            <Link to="/signup">
-              <Button size="lg" className="bg-gradient-to-r from-primary to-secondary hover:opacity-90 glow text-lg px-8 py-6">
+            <Link to="/signup" className="w-full sm:w-auto">
+              <Button size="lg" className="bg-gradient-to-r from-primary to-secondary hover:opacity-90 glow text-base sm:text-lg px-6 sm:px-8 py-5 sm:py-6 w-full sm:w-auto">
                 Get Started
               </Button>
             </Link>
-            <Link to="/groups">
-              <Button size="lg" variant="outline" className="glass border-primary/50 hover:border-primary text-lg px-8 py-6">
+            <Link to="/groups" className="w-full sm:w-auto">
+              <Button size="lg" variant="outline" className="glass border-primary/50 hover:border-primary text-base sm:text-lg px-6 sm:px-8 py-5 sm:py-6 w-full sm:w-auto">
                 Join a Group
               </Button>
             </Link>
           </motion.div>
 
           <div className="mt-20 relative">
-            <div className="glass-card max-w-4xl mx-auto p-8 glow">
-              <div className="grid grid-cols-3 gap-8 text-center">
+            <div className="glass-card max-w-4xl mx-auto p-4 sm:p-8 glow">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 sm:gap-8 text-center">
                 <div>
-                  <div className="text-4xl font-bold gradient-text mb-2">10K+</div>
+                  <div className="text-3xl sm:text-4xl font-bold gradient-text mb-2">10K+</div>
                   <div className="text-sm text-muted-foreground">Active Students</div>
                 </div>
                 <div>
-                  <div className="text-4xl font-bold gradient-text mb-2">500+</div>
+                  <div className="text-3xl sm:text-4xl font-bold gradient-text mb-2">500+</div>
                   <div className="text-sm text-muted-foreground">Study Groups</div>
                 </div>
                 <div>
-                  <div className="text-4xl font-bold gradient-text mb-2">95%</div>
+                  <div className="text-3xl sm:text-4xl font-bold gradient-text mb-2">95%</div>
                   <div className="text-sm text-muted-foreground">Success Rate</div>
                 </div>
               </div>
@@ -187,15 +187,15 @@ const Home = () => {
           transition={{ duration: 0.8 }}
           className="container mx-auto"
         >
-          <div className="glass-card text-center max-w-3xl mx-auto glow p-12">
-            <h2 className="text-4xl font-bold mb-4 gradient-text">
+          <div className="glass-card text-center max-w-3xl mx-auto glow p-6 sm:p-12">
+            <h2 className="text-3xl sm:text-4xl font-bold mb-4 gradient-text">
               Ready to Transform Your Learning?
             </h2>
-            <p className="text-xl text-muted-foreground mb-8">
+            <p className="text-lg sm:text-xl text-muted-foreground mb-8">
               Join our community today and start collaborating with students worldwide.
             </p>
             <Link to="/signup">
-              <Button size="lg" className="bg-gradient-to-r from-primary to-secondary hover:opacity-90 text-lg px-8 py-6">
+              <Button size="lg" className="bg-gradient-to-r from-primary to-secondary hover:opacity-90 text-base sm:text-lg px-6 sm:px-8 py-5 sm:py-6 w-full sm:w-auto">
                 Create Your Free Account
               </Button>
             </Link>
