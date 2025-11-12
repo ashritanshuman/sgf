@@ -76,7 +76,7 @@ const Home = () => {
             className="inline-block mb-6"
           >
             <span className="px-4 py-2 rounded-full glass text-sm font-medium">
-              ✨ Welcome to the Future of Learning
+              welcome back
             </span>
           </motion.div>
 
