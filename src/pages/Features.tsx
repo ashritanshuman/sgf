@@ -16,49 +16,49 @@ const Features = () => {
       icon: Users,
       title: "User Profiles",
       description: "Create detailed profiles showcasing your academic interests, goals, and learning preferences.",
-      gradient: "from-gray-800 to-gray-600",
+      gradient: "from-primary to-secondary",
     },
     {
       icon: Brain,
       title: "Smart Matching",
       description: "AI-powered algorithm matches you with compatible study partners based on your profile.",
-      gradient: "from-gray-700 to-gray-500",
+      gradient: "from-primary to-secondary",
     },
     {
       icon: MessageCircle,
       title: "Group Chat",
       description: "Real-time messaging with file sharing, voice notes, and collaborative features.",
-      gradient: "from-gray-600 to-gray-400",
+      gradient: "from-primary to-secondary",
     },
     {
       icon: Calendar,
       title: "Study Scheduler",
       description: "Coordinate study sessions with built-in calendar and automated reminders.",
-      gradient: "from-gray-500 to-gray-300",
+      gradient: "from-primary to-secondary",
     },
     {
       icon: BookOpen,
       title: "Resource Sharing",
       description: "Share notes, documents, and study materials securely with your group.",
-      gradient: "from-slate-700 to-slate-500",
+      gradient: "from-primary to-secondary",
     },
     {
       icon: Trophy,
       title: "Gamification",
       description: "Earn badges, compete on leaderboards, and unlock achievements as you study.",
-      gradient: "from-zinc-700 to-zinc-500",
+      gradient: "from-primary to-secondary",
     },
     {
       icon: Video,
       title: "Video Sessions",
       description: "Host virtual study sessions with integrated video conferencing tools.",
-      gradient: "from-stone-700 to-stone-500",
+      gradient: "from-primary to-secondary",
     },
     {
       icon: Bell,
       title: "Smart Notifications",
       description: "Stay updated with intelligent notifications about group activities and deadlines.",
-      gradient: "from-neutral-700 to-neutral-500",
+      gradient: "from-primary to-secondary",
     },
   ];
 
@@ -97,7 +97,7 @@ const Features = () => {
                 }}
               />
               <div className={`inline-block p-4 rounded-xl bg-gradient-to-br ${feature.gradient} mb-4 group-hover:scale-110 transition-transform duration-300`}>
-                <feature.icon className="h-8 w-8 text-icon-accent" />
+                <feature.icon className="h-8 w-8 text-primary-foreground" />
               </div>
               <h3 className="text-xl font-bold mb-3">{feature.title}</h3>
               <p className="text-muted-foreground">{feature.description}</p>
