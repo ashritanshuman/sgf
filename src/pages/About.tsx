@@ -94,7 +94,7 @@ const About = () => {
                 className="glass-card text-center glow-hover"
               >
                 <div className="inline-block p-4 rounded-xl bg-gradient-to-br from-primary to-secondary mb-4">
-                  <value.icon className="h-8 w-8 text-white" />
+                  <value.icon className="h-8 w-8 text-primary-foreground" />
                 </div>
                 <h3 className="text-xl font-bold mb-2">{value.title}</h3>
                 <p className="text-muted-foreground text-sm">{value.description}</p>
