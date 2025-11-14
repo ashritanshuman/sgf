@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Menu, X, Moon, Sun, GraduationCap } from "lucide-react";
+import { Menu, X, Moon, Sun, GraduationCap, Bell } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 const Navbar = () => {
@@ -20,6 +20,9 @@ const Navbar = () => {
     { name: "Features", path: "/features" },
     { name: "Dashboard", path: "/dashboard" },
     { name: "Groups", path: "/groups" },
+    { name: "Matching", path: "/matching" },
+    { name: "Resources", path: "/resources" },
+    { name: "Progress", path: "/progress" },
     { name: "Contact", path: "/contact" },
   ];
 
@@ -64,6 +67,14 @@ const Navbar = () => {
           </div>
 
           <div className="hidden md:flex items-center gap-4">
+            <Link to="/notifications">
+              <Button variant="ghost" size="icon" className="rounded-full relative">
+                <Bell className="h-5 w-5" />
+                <span className="absolute -top-1 -right-1 h-4 w-4 bg-red-500 rounded-full text-[10px] flex items-center justify-center text-white font-bold">
+                  3
+                </span>
+              </Button>
+            </Link>
             <Button
               variant="ghost"
               size="icon"
