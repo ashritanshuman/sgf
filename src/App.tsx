@@ -18,6 +18,11 @@ import Profile from "./pages/Profile";
 import Contact from "./pages/Contact";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
+import Matching from "./pages/Matching";
+import Resources from "./pages/Resources";
+import ProgressPage from "./pages/Progress";
+import Notifications from "./pages/Notifications";
+import ProfileSetup from "./pages/ProfileSetup";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -53,6 +58,11 @@ const AppContent = () => {
             <Route path="/chat" element={<PageTransition><Chat /></PageTransition>} />
             <Route path="/scheduler" element={<PageTransition><Scheduler /></PageTransition>} />
             <Route path="/leaderboard" element={<PageTransition><Leaderboard /></PageTransition>} />
+            <Route path="/matching" element={<PageTransition><Matching /></PageTransition>} />
+            <Route path="/resources" element={<PageTransition><Resources /></PageTransition>} />
+            <Route path="/progress" element={<PageTransition><ProgressPage /></PageTransition>} />
+            <Route path="/notifications" element={<PageTransition><Notifications /></PageTransition>} />
+            <Route path="/profile-setup" element={<PageTransition><ProfileSetup /></PageTransition>} />
             <Route path="/profile" element={<PageTransition><Profile /></PageTransition>} />
             <Route path="/contact" element={<PageTransition><Contact /></PageTransition>} />
             <Route path="/login" element={<PageTransition><Login /></PageTransition>} />
