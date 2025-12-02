@@ -14,16 +14,275 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      group_members: {
+        Row: {
+          group_id: string
+          id: string
+          joined_at: string
+          user_id: string
+        }
+        Insert: {
+          group_id: string
+          id?: string
+          joined_at?: string
+          user_id: string
+        }
+        Update: {
+          group_id?: string
+          id?: string
+          joined_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "group_members_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "study_groups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      messages: {
+        Row: {
+          content: string
+          created_at: string
+          group_id: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          group_id: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          group_id?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "messages_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "study_groups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          availability: Json | null
+          avatar_url: string | null
+          bio: string | null
+          created_at: string
+          full_name: string | null
+          id: string
+          interests: string[] | null
+          learning_style: Database["public"]["Enums"]["learning_style"] | null
+          major: string | null
+          skill_level: Database["public"]["Enums"]["skill_level"] | null
+          subjects: string[] | null
+          university: string | null
+          updated_at: string
+          user_id: string
+          year_of_study: string | null
+        }
+        Insert: {
+          availability?: Json | null
+          avatar_url?: string | null
+          bio?: string | null
+          created_at?: string
+          full_name?: string | null
+          id?: string
+          interests?: string[] | null
+          learning_style?: Database["public"]["Enums"]["learning_style"] | null
+          major?: string | null
+          skill_level?: Database["public"]["Enums"]["skill_level"] | null
+          subjects?: string[] | null
+          university?: string | null
+          updated_at?: string
+          user_id: string
+          year_of_study?: string | null
+        }
+        Update: {
+          availability?: Json | null
+          avatar_url?: string | null
+          bio?: string | null
+          created_at?: string
+          full_name?: string | null
+          id?: string
+          interests?: string[] | null
+          learning_style?: Database["public"]["Enums"]["learning_style"] | null
+          major?: string | null
+          skill_level?: Database["public"]["Enums"]["skill_level"] | null
+          subjects?: string[] | null
+          university?: string | null
+          updated_at?: string
+          user_id?: string
+          year_of_study?: string | null
+        }
+        Relationships: []
+      }
+      study_groups: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          description: string | null
+          difficulty: Database["public"]["Enums"]["skill_level"] | null
+          id: string
+          is_public: boolean | null
+          max_members: number | null
+          name: string
+          subject: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          difficulty?: Database["public"]["Enums"]["skill_level"] | null
+          id?: string
+          is_public?: boolean | null
+          max_members?: number | null
+          name: string
+          subject: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          difficulty?: Database["public"]["Enums"]["skill_level"] | null
+          id?: string
+          is_public?: boolean | null
+          max_members?: number | null
+          name?: string
+          subject?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      study_progress: {
+        Row: {
+          created_at: string
+          goals_met: number | null
+          hours_studied: number | null
+          id: string
+          sessions_completed: number | null
+          subject: string
+          user_id: string
+          week_start: string
+        }
+        Insert: {
+          created_at?: string
+          goals_met?: number | null
+          hours_studied?: number | null
+          id?: string
+          sessions_completed?: number | null
+          subject: string
+          user_id: string
+          week_start: string
+        }
+        Update: {
+          created_at?: string
+          goals_met?: number | null
+          hours_studied?: number | null
+          id?: string
+          sessions_completed?: number | null
+          subject?: string
+          user_id?: string
+          week_start?: string
+        }
+        Relationships: []
+      }
+      study_sessions: {
+        Row: {
+          created_at: string
+          description: string | null
+          duration_minutes: number | null
+          group_id: string | null
+          host_id: string | null
+          id: string
+          is_virtual: boolean | null
+          meeting_link: string | null
+          scheduled_at: string
+          title: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          duration_minutes?: number | null
+          group_id?: string | null
+          host_id?: string | null
+          id?: string
+          is_virtual?: boolean | null
+          meeting_link?: string | null
+          scheduled_at: string
+          title: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          duration_minutes?: number | null
+          group_id?: string | null
+          host_id?: string | null
+          id?: string
+          is_virtual?: boolean | null
+          meeting_link?: string | null
+          scheduled_at?: string
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "study_sessions_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "study_groups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_roles: {
+        Row: {
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "moderator" | "user"
+      learning_style: "visual" | "auditory" | "reading" | "kinesthetic"
+      skill_level: "beginner" | "intermediate" | "advanced" | "expert"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +409,10 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "moderator", "user"],
+      learning_style: ["visual", "auditory", "reading", "kinesthetic"],
+      skill_level: ["beginner", "intermediate", "advanced", "expert"],
+    },
   },
 } as const
