@@ -1,22 +1,62 @@
 import { motion } from "framer-motion";
-import { useState } from "react";
-import { User, Mail, BookOpen, Target, Edit2, Camera } from "lucide-react";
+import { useState, useEffect } from "react";
+import { User, Mail, BookOpen, Target, Edit2, Camera, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { useProfile } from "@/hooks/useProfile";
+import { useAuth } from "@/contexts/AuthContext";
+import { useStudyProgress } from "@/hooks/useStudyProgress";
+import { useStudyGroups } from "@/hooks/useStudyGroups";
 
 const Profile = () => {
+  const { user } = useAuth();
+  const { profile, loading, updateProfile } = useProfile();
+  const { getTotalStats } = useStudyProgress();
+  const { myGroups } = useStudyGroups();
   const [isEditing, setIsEditing] = useState(false);
+  const [formData, setFormData] = useState({
+    full_name: "",
+    bio: "",
+  });
 
-  const stats = [
-    { label: "Study Hours", value: "142", icon: "⏰" },
-    { label: "Groups Joined", value: "5", icon: "👥" },
-    { label: "Achievements", value: "12", icon: "🏆" },
-    { label: "Current Streak", value: "21", icon: "🔥" },
+  useEffect(() => {
+    if (profile) {
+      setFormData({
+        full_name: profile.full_name || "",
+        bio: profile.bio || "",
+      });
+    }
+  }, [profile]);
+
+  const stats = getTotalStats();
+  const statsDisplay = [
+    { label: "Study Hours", value: Math.round(stats.hours_studied).toString(), icon: "⏰" },
+    { label: "Groups Joined", value: myGroups.length.toString(), icon: "👥" },
+    { label: "Sessions", value: stats.sessions_completed.toString(), icon: "📚" },
+    { label: "Goals Met", value: stats.goals_met.toString(), icon: "🎯" },
   ];
 
-  const interests = ["Mathematics", "Physics", "Computer Science", "Chemistry", "Biology"];
-  const badges = ["🥇 Top Learner", "🔥 21 Day Streak", "👑 Group Leader", "⭐ Rising Star"];
+  const interests = profile?.subjects || [];
+  const badges = [
+    myGroups.length >= 1 ? "👥 Team Player" : null,
+    stats.hours_studied >= 10 ? "⏰ Dedicated Learner" : null,
+    stats.sessions_completed >= 5 ? "📚 Session Master" : null,
+    stats.goals_met >= 3 ? "🎯 Goal Achiever" : null,
+  ].filter(Boolean);
+
+  const handleSave = async () => {
+    await updateProfile(formData);
+    setIsEditing(false);
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen pt-32 flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen pt-32 px-4">
@@ -42,7 +82,11 @@ const Profile = () => {
               >
                 <div className="w-32 h-32 rounded-full bg-gradient-to-br from-primary to-secondary p-1">
                   <div className="w-full h-full rounded-full glass flex items-center justify-center text-4xl">
-                    👤
+                    {profile?.avatar_url ? (
+                      <img src={profile.avatar_url} alt="Avatar" className="w-full h-full rounded-full object-cover" />
+                    ) : (
+                      "👤"
+                    )}
                   </div>
                 </div>
                 <div className="absolute bottom-2 right-2 p-2 rounded-full bg-primary opacity-0 group-hover:opacity-100 transition-opacity">
@@ -51,12 +95,12 @@ const Profile = () => {
               </motion.div>
 
               <div className="flex-1 text-center md:text-left">
-                <h1 className="text-4xl font-bold mb-2">John Doe</h1>
+                <h1 className="text-4xl font-bold mb-2">{profile?.full_name || "Anonymous User"}</h1>
                 <p className="text-lg text-muted-foreground mb-4">
-                  Passionate learner • Computer Science Student • Study Group Enthusiast
+                  {profile?.bio || "No bio yet"}
                 </p>
                 <div className="flex flex-wrap gap-2 justify-center md:justify-start">
-                  {badges.map((badge, index) => (
+                  {badges.length > 0 ? badges.map((badge, index) => (
                     <motion.span
                       key={index}
                       initial={{ opacity: 0, scale: 0.8 }}
@@ -66,7 +110,9 @@ const Profile = () => {
                     >
                       {badge}
                     </motion.span>
-                  ))}
+                  )) : (
+                    <span className="text-sm text-muted-foreground">Complete activities to earn badges!</span>
+                  )}
                 </div>
               </div>
 
@@ -89,7 +135,7 @@ const Profile = () => {
           transition={{ delay: 0.4, duration: 0.6 }}
           className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8"
         >
-          {stats.map((stat, index) => (
+          {statsDisplay.map((stat, index) => (
             <motion.div
               key={index}
               initial={{ opacity: 0, scale: 0.9 }}
@@ -122,7 +168,8 @@ const Profile = () => {
                 </label>
                 <Input
                   disabled={!isEditing}
-                  defaultValue="John Doe"
+                  value={formData.full_name}
+                  onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
                   className="bg-transparent border-white/10"
                 />
               </div>
@@ -132,8 +179,8 @@ const Profile = () => {
                   Email
                 </label>
                 <Input
-                  disabled={!isEditing}
-                  defaultValue="john.doe@example.com"
+                  disabled
+                  value={user?.email || ""}
                   className="bg-transparent border-white/10"
                 />
               </div>
@@ -144,12 +191,13 @@ const Profile = () => {
                 </label>
                 <Textarea
                   disabled={!isEditing}
-                  defaultValue="Passionate about learning and helping others succeed. Looking for study groups in STEM subjects."
+                  value={formData.bio}
+                  onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
                   className="bg-transparent border-white/10 min-h-[100px]"
                 />
               </div>
               {isEditing && (
-                <Button className="w-full bg-gradient-to-r from-primary to-secondary hover:opacity-90">
+                <Button onClick={handleSave} className="w-full bg-gradient-to-r from-primary to-secondary hover:opacity-90">
                   Save Changes
                 </Button>
               )}
@@ -169,7 +217,7 @@ const Profile = () => {
                 Academic Interests
               </h2>
               <div className="flex flex-wrap gap-2">
-                {interests.map((interest, index) => (
+                {interests.length > 0 ? interests.map((interest, index) => (
                   <motion.span
                     key={index}
                     initial={{ opacity: 0, scale: 0.8 }}
@@ -180,43 +228,34 @@ const Profile = () => {
                   >
                     {interest}
                   </motion.span>
-                ))}
+                )) : (
+                  <p className="text-muted-foreground">Update your profile to add subjects</p>
+                )}
               </div>
             </div>
 
             <div className="glass-card glow-hover">
               <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
                 <Target className="h-6 w-6 text-primary" />
-                Learning Goals
+                Profile Details
               </h2>
               <ul className="space-y-3">
-                <motion.li
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.8, duration: 0.6 }}
-                  className="flex items-center gap-3"
-                >
+                <li className="flex items-center gap-3">
                   <div className="w-2 h-2 rounded-full bg-primary" />
-                  <span>Master Advanced Calculus concepts</span>
-                </motion.li>
-                <motion.li
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.9, duration: 0.6 }}
-                  className="flex items-center gap-3"
-                >
+                  <span>University: {profile?.university || "Not set"}</span>
+                </li>
+                <li className="flex items-center gap-3">
                   <div className="w-2 h-2 rounded-full bg-secondary" />
-                  <span>Complete Physics certification</span>
-                </motion.li>
-                <motion.li
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 1.0, duration: 0.6 }}
-                  className="flex items-center gap-3"
-                >
+                  <span>Major: {profile?.major || "Not set"}</span>
+                </li>
+                <li className="flex items-center gap-3">
                   <div className="w-2 h-2 rounded-full bg-accent" />
-                  <span>Build 5 web development projects</span>
-                </motion.li>
+                  <span>Year: {profile?.year_of_study || "Not set"}</span>
+                </li>
+                <li className="flex items-center gap-3">
+                  <div className="w-2 h-2 rounded-full bg-primary" />
+                  <span className="capitalize">Learning Style: {profile?.learning_style || "Not set"}</span>
+                </li>
               </ul>
             </div>
           </motion.div>

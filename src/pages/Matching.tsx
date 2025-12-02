@@ -2,42 +2,54 @@ import { motion } from "framer-motion";
 import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
 import { Badge } from "@/components/ui/badge";
-import { Users, Brain, Clock, BookOpen, Star } from "lucide-react";
+import { Users, Brain, Clock, BookOpen, Star, Loader2 } from "lucide-react";
+import { useProfiles } from "@/hooks/useProfile";
+import { useAuth } from "@/contexts/AuthContext";
 
 const Matching = () => {
-  const [matchScore, setMatchScore] = useState(85);
+  const { user } = useAuth();
+  const { profiles, loading } = useProfiles();
+  const [matchScore, setMatchScore] = useState(50);
+  const [filters, setFilters] = useState({
+    subject: "",
+    level: "",
+    learningStyle: "",
+    availability: "",
+  });
 
-  const matchedUsers = [
-    {
-      name: "Sarah Johnson",
-      subjects: ["Mathematics", "Physics"],
-      level: "Intermediate",
-      availability: "Evenings",
-      matchScore: 92,
-      learningStyle: "Visual",
-    },
-    {
-      name: "Mike Chen",
-      subjects: ["Computer Science", "Mathematics"],
-      level: "Advanced",
-      availability: "Weekends",
-      matchScore: 88,
-      learningStyle: "Practical",
-    },
-    {
-      name: "Emma Davis",
-      subjects: ["Biology", "Chemistry"],
-      level: "Beginner",
-      availability: "Mornings",
-      matchScore: 85,
-      learningStyle: "Auditory",
-    },
-  ];
+  // Filter out current user and apply filters
+  const filteredProfiles = profiles.filter(profile => {
+    if (profile.user_id === user?.id) return false;
+    if (filters.level && profile.skill_level !== filters.level) return false;
+    if (filters.learningStyle && profile.learning_style !== filters.learningStyle) return false;
+    if (filters.subject && !profile.subjects?.includes(filters.subject)) return false;
+    return true;
+  });
+
+  // Calculate a simple match score based on common interests
+  const calculateMatchScore = (profile: typeof profiles[0]) => {
+    let score = 70;
+    if (profile.subjects && profile.subjects.length > 0) score += 10;
+    if (profile.learning_style) score += 5;
+    if (profile.skill_level) score += 5;
+    if (profile.availability && Object.keys(profile.availability).length > 0) score += 10;
+    return Math.min(score, 99);
+  };
+
+  const matchedUsers = filteredProfiles
+    .map(profile => ({
+      ...profile,
+      matchScore: calculateMatchScore(profile),
+    }))
+    .filter(profile => profile.matchScore >= matchScore)
+    .sort((a, b) => b.matchScore - a.matchScore);
+
+  // Get unique subjects from all profiles
+  const allSubjects = [...new Set(profiles.flatMap(p => p.subjects || []))];
 
   return (
     <div className="min-h-screen pt-32 px-4 pb-20">
@@ -50,7 +62,7 @@ const Matching = () => {
         <div className="text-center mb-12">
           <h1 className="text-5xl font-bold mb-4 gradient-text">Smart Matching</h1>
           <p className="text-xl text-muted-foreground">
-            Find your perfect study partners based on AI-powered matching
+            Find your perfect study partners based on compatible profiles
           </p>
         </div>
 
@@ -63,59 +75,56 @@ const Matching = () => {
               <div className="space-y-6">
                 <div>
                   <Label htmlFor="subject">Primary Subject</Label>
-                  <Select>
+                  <Select
+                    value={filters.subject}
+                    onValueChange={(value) => setFilters({ ...filters, subject: value })}
+                  >
                     <SelectTrigger id="subject">
                       <SelectValue placeholder="Select subject" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="math">Mathematics</SelectItem>
-                      <SelectItem value="physics">Physics</SelectItem>
-                      <SelectItem value="cs">Computer Science</SelectItem>
-                      <SelectItem value="bio">Biology</SelectItem>
+                      <SelectItem value="">All Subjects</SelectItem>
+                      {allSubjects.map(subject => (
+                        <SelectItem key={subject} value={subject}>{subject}</SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>
 
                 <div>
                   <Label htmlFor="level">Skill Level</Label>
-                  <Select>
+                  <Select
+                    value={filters.level}
+                    onValueChange={(value) => setFilters({ ...filters, level: value })}
+                  >
                     <SelectTrigger id="level">
                       <SelectValue placeholder="Select level" />
                     </SelectTrigger>
                     <SelectContent>
+                      <SelectItem value="">Any Level</SelectItem>
                       <SelectItem value="beginner">Beginner</SelectItem>
                       <SelectItem value="intermediate">Intermediate</SelectItem>
                       <SelectItem value="advanced">Advanced</SelectItem>
+                      <SelectItem value="expert">Expert</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
 
                 <div>
                   <Label htmlFor="learning-style">Learning Style</Label>
-                  <Select>
+                  <Select
+                    value={filters.learningStyle}
+                    onValueChange={(value) => setFilters({ ...filters, learningStyle: value })}
+                  >
                     <SelectTrigger id="learning-style">
                       <SelectValue placeholder="Select style" />
                     </SelectTrigger>
                     <SelectContent>
+                      <SelectItem value="">Any Style</SelectItem>
                       <SelectItem value="visual">Visual</SelectItem>
                       <SelectItem value="auditory">Auditory</SelectItem>
-                      <SelectItem value="practical">Practical</SelectItem>
+                      <SelectItem value="kinesthetic">Practical</SelectItem>
                       <SelectItem value="reading">Reading/Writing</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div>
-                  <Label htmlFor="availability">Availability</Label>
-                  <Select>
-                    <SelectTrigger id="availability">
-                      <SelectValue placeholder="Select time" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="mornings">Mornings</SelectItem>
-                      <SelectItem value="afternoons">Afternoons</SelectItem>
-                      <SelectItem value="evenings">Evenings</SelectItem>
-                      <SelectItem value="weekends">Weekends</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -132,9 +141,12 @@ const Matching = () => {
                   />
                 </div>
 
-                <Button className="w-full bg-gradient-to-r from-primary to-secondary">
+                <Button
+                  className="w-full bg-gradient-to-r from-primary to-secondary"
+                  onClick={() => setFilters({ subject: "", level: "", learningStyle: "", availability: "" })}
+                >
                   <Brain className="mr-2 h-4 w-4" />
-                  Find Matches
+                  Reset Filters
                 </Button>
               </div>
             </Card>
@@ -142,58 +154,86 @@ const Matching = () => {
 
           {/* Matched Users */}
           <div className="lg:col-span-2 space-y-4">
-            {matchedUsers.map((user, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: index * 0.1 }}
-              >
-                <Card className="glass-card glow-hover hover:scale-[1.02] transition-all">
-                  <div className="flex items-start justify-between mb-4">
-                    <div className="flex items-center gap-4">
-                      <div className="h-16 w-16 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center">
-                        <Users className="h-8 w-8 text-primary-foreground" />
-                      </div>
-                      <div>
-                        <h3 className="text-xl font-bold">{user.name}</h3>
-                        <div className="flex items-center gap-2 mt-1">
-                          <Star className="h-4 w-4 text-yellow-500 fill-yellow-500" />
-                          <span className="text-sm font-bold text-green-500">{user.matchScore}% Match</span>
+            {loading ? (
+              <div className="flex justify-center py-12">
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+              </div>
+            ) : matchedUsers.length === 0 ? (
+              <Card className="glass-card text-center py-12">
+                <Users className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
+                <h3 className="text-xl font-bold mb-2">No matches found</h3>
+                <p className="text-muted-foreground">Try adjusting your filters or lowering the match score</p>
+              </Card>
+            ) : (
+              matchedUsers.map((user, index) => (
+                <motion.div
+                  key={user.id}
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: index * 0.1 }}
+                >
+                  <Card className="glass-card glow-hover hover:scale-[1.02] transition-all">
+                    <div className="flex items-start justify-between mb-4">
+                      <div className="flex items-center gap-4">
+                        <div className="h-16 w-16 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center overflow-hidden">
+                          {user.avatar_url ? (
+                            <img src={user.avatar_url} alt="" className="w-full h-full object-cover" />
+                          ) : (
+                            <Users className="h-8 w-8 text-primary-foreground" />
+                          )}
+                        </div>
+                        <div>
+                          <h3 className="text-xl font-bold">{user.full_name || "Anonymous User"}</h3>
+                          <div className="flex items-center gap-2 mt-1">
+                            <Star className="h-4 w-4 text-yellow-500 fill-yellow-500" />
+                            <span className="text-sm font-bold text-green-500">{user.matchScore}% Match</span>
+                          </div>
                         </div>
                       </div>
+                      {user.skill_level && (
+                        <Badge className="bg-gradient-to-r from-primary to-secondary text-primary-foreground capitalize">
+                          {user.skill_level}
+                        </Badge>
+                      )}
                     </div>
-                    <Badge className="bg-gradient-to-r from-primary to-secondary text-primary-foreground">
-                      {user.level}
-                    </Badge>
-                  </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
-                    <div className="flex items-center gap-2">
-                      <BookOpen className="h-4 w-4 text-muted-foreground" />
-                      <div className="flex gap-2 flex-wrap">
-                        {user.subjects.map((subject, i) => (
-                          <Badge key={i} variant="outline">{subject}</Badge>
-                        ))}
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Clock className="h-4 w-4 text-muted-foreground" />
-                      <span className="text-sm">{user.availability}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Brain className="h-4 w-4 text-muted-foreground" />
-                      <span className="text-sm">{user.learningStyle} Learner</span>
-                    </div>
-                  </div>
+                    {user.bio && (
+                      <p className="text-sm text-muted-foreground mb-4">{user.bio}</p>
+                    )}
 
-                  <div className="flex gap-2">
-                    <Button className="flex-1">Send Request</Button>
-                    <Button variant="outline">View Profile</Button>
-                  </div>
-                </Card>
-              </motion.div>
-            ))}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+                      {user.subjects && user.subjects.length > 0 && (
+                        <div className="flex items-center gap-2">
+                          <BookOpen className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                          <div className="flex gap-2 flex-wrap">
+                            {user.subjects.slice(0, 3).map((subject, i) => (
+                              <Badge key={i} variant="outline">{subject}</Badge>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                      {user.learning_style && (
+                        <div className="flex items-center gap-2">
+                          <Brain className="h-4 w-4 text-muted-foreground" />
+                          <span className="text-sm capitalize">{user.learning_style} Learner</span>
+                        </div>
+                      )}
+                      {user.university && (
+                        <div className="flex items-center gap-2">
+                          <Clock className="h-4 w-4 text-muted-foreground" />
+                          <span className="text-sm">{user.university}</span>
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="flex gap-2">
+                      <Button className="flex-1">Send Request</Button>
+                      <Button variant="outline">View Profile</Button>
+                    </div>
+                  </Card>
+                </motion.div>
+              ))
+            )}
           </div>
         </div>
       </motion.div>

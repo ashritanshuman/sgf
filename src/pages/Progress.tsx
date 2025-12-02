@@ -2,23 +2,40 @@ import { motion } from "framer-motion";
 import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
-import { Trophy, Target, Star, TrendingUp, Award, Flame } from "lucide-react";
+import { Trophy, Target, Star, TrendingUp, Award, Flame, Loader2 } from "lucide-react";
+import { useStudyProgress } from "@/hooks/useStudyProgress";
+import { useStudyGroups } from "@/hooks/useStudyGroups";
 
 const ProgressPage = () => {
+  const { progress, loading, getTotalStats } = useStudyProgress();
+  const { myGroups } = useStudyGroups();
+
+  const totals = getTotalStats();
+
   const badges = [
-    { name: "Early Bird", icon: Star, description: "Complete 5 morning study sessions", unlocked: true },
-    { name: "Team Player", icon: Trophy, description: "Join 3 study groups", unlocked: true },
-    { name: "Knowledge Sharer", icon: Award, description: "Upload 10 resources", unlocked: true },
-    { name: "Consistent Learner", icon: Flame, description: "Study for 7 days straight", unlocked: false },
-    { name: "Master Achiever", icon: Target, description: "Complete all goals this month", unlocked: false },
+    { name: "Early Bird", icon: Star, description: "Complete 5 morning study sessions", unlocked: totals.sessions_completed >= 5 },
+    { name: "Team Player", icon: Trophy, description: "Join 3 study groups", unlocked: myGroups.length >= 3 },
+    { name: "Knowledge Seeker", icon: Award, description: "Study for 10 hours total", unlocked: totals.hours_studied >= 10 },
+    { name: "Goal Crusher", icon: Target, description: "Complete 5 goals", unlocked: totals.goals_met >= 5 },
+    { name: "Dedicated Learner", icon: Flame, description: "Complete 10 sessions", unlocked: totals.sessions_completed >= 10 },
   ];
 
   const stats = [
-    { label: "Study Hours", value: 42, max: 50, color: "from-blue-500 to-cyan-500" },
-    { label: "Goals Completed", value: 8, max: 10, color: "from-green-500 to-emerald-500" },
-    { label: "Resources Shared", value: 15, max: 20, color: "from-purple-500 to-pink-500" },
-    { label: "Group Sessions", value: 12, max: 15, color: "from-orange-500 to-red-500" },
+    { label: "Study Hours", value: Math.round(totals.hours_studied), max: 50, color: "from-gray-600 to-gray-400" },
+    { label: "Goals Completed", value: totals.goals_met, max: 10, color: "from-gray-500 to-gray-300" },
+    { label: "Sessions Done", value: totals.sessions_completed, max: 20, color: "from-slate-600 to-slate-400" },
+    { label: "Groups Joined", value: myGroups.length, max: 5, color: "from-zinc-600 to-zinc-400" },
   ];
+
+  const unlockedCount = badges.filter(b => b.unlocked).length;
+
+  if (loading) {
+    return (
+      <div className="min-h-screen pt-32 flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen pt-32 px-4 pb-20">
@@ -51,29 +68,34 @@ const ProgressPage = () => {
                     {stat.value}/{stat.max}
                   </span>
                 </div>
-                <Progress value={(stat.value / stat.max) * 100} className="h-3" />
-                <div className={`h-3 w-full bg-gradient-to-r ${stat.color} rounded-full mt-[-12px] opacity-80`} 
-                     style={{ width: `${(stat.value / stat.max) * 100}%` }} />
+                <div className="relative h-3 rounded-full overflow-hidden bg-muted">
+                  <div 
+                    className={`absolute h-full bg-gradient-to-r ${stat.color} rounded-full transition-all duration-500`}
+                    style={{ width: `${Math.min((stat.value / stat.max) * 100, 100)}%` }}
+                  />
+                </div>
               </Card>
             </motion.div>
           ))}
         </div>
 
-        {/* Leaderboard Position */}
+        {/* Achievements Summary */}
         <Card className="glass-card mb-12 glow">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <div className="h-16 w-16 rounded-full bg-gradient-to-br from-yellow-400 to-orange-500 flex items-center justify-center">
+              <div className="h-16 w-16 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center">
                 <TrendingUp className="h-8 w-8 text-white" />
               </div>
               <div>
-                <h2 className="text-2xl font-bold">Leaderboard Rank</h2>
-                <p className="text-muted-foreground">You're in the top 15% this week!</p>
+                <h2 className="text-2xl font-bold">Your Progress</h2>
+                <p className="text-muted-foreground">
+                  You've unlocked {unlockedCount} of {badges.length} achievements!
+                </p>
               </div>
             </div>
             <div className="text-right">
-              <div className="text-4xl font-bold gradient-text">#42</div>
-              <p className="text-sm text-green-500">↑ 5 places</p>
+              <div className="text-4xl font-bold gradient-text">{Math.round((unlockedCount / badges.length) * 100)}%</div>
+              <p className="text-sm text-muted-foreground">completion</p>
             </div>
           </div>
         </Card>
@@ -93,7 +115,7 @@ const ProgressPage = () => {
                 <Card className={`glass-card text-center ${badge.unlocked ? 'glow' : 'opacity-50'}`}>
                   <div className={`inline-block p-6 rounded-full mb-4 ${
                     badge.unlocked 
-                      ? 'bg-gradient-to-br from-yellow-400 to-orange-500' 
+                      ? 'bg-gradient-to-br from-primary to-secondary' 
                       : 'bg-muted'
                   }`}>
                     <badge.icon className="h-10 w-10 text-white" />
@@ -111,21 +133,26 @@ const ProgressPage = () => {
           </div>
         </div>
 
-        {/* Weekly Activity */}
-        <Card className="glass-card mt-12">
-          <h2 className="text-2xl font-bold mb-6">Weekly Activity</h2>
-          <div className="grid grid-cols-7 gap-2">
-            {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((day, index) => (
-              <div key={day} className="text-center">
-                <div className="text-sm text-muted-foreground mb-2">{day}</div>
-                <div className={`h-24 rounded-lg ${
-                  index < 5 ? 'bg-gradient-to-t from-primary to-secondary glow' : 'bg-muted'
-                }`} />
-                <div className="text-xs mt-2 font-bold">{index < 5 ? `${2 + index}h` : '-'}</div>
-              </div>
-            ))}
-          </div>
-        </Card>
+        {/* Progress by Subject */}
+        {progress.length > 0 && (
+          <Card className="glass-card mt-12">
+            <h2 className="text-2xl font-bold mb-6">Progress by Subject</h2>
+            <div className="space-y-4">
+              {progress.slice(0, 5).map((p, index) => (
+                <div key={p.id} className="flex items-center justify-between p-4 rounded-lg glass">
+                  <div>
+                    <h4 className="font-bold">{p.subject}</h4>
+                    <p className="text-sm text-muted-foreground">Week of {p.week_start}</p>
+                  </div>
+                  <div className="text-right">
+                    <div className="font-bold">{Number(p.hours_studied).toFixed(1)}h studied</div>
+                    <div className="text-sm text-muted-foreground">{p.sessions_completed} sessions</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </Card>
+        )}
       </motion.div>
     </div>
   );

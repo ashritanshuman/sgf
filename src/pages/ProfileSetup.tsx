@@ -1,5 +1,6 @@
 import { motion } from "framer-motion";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -7,15 +8,104 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { User, BookOpen, Brain, Clock, Target, X } from "lucide-react";
+import { User, BookOpen, Brain, Clock, Target, X, Loader2 } from "lucide-react";
+import { useProfile } from "@/hooks/useProfile";
+import { toast } from "sonner";
 
 const ProfileSetup = () => {
-  const [subjects, setSubjects] = useState(["Mathematics", "Physics"]);
-  const [interests, setInterests] = useState(["Problem Solving", "Theory"]);
+  const navigate = useNavigate();
+  const { profile, loading, updateProfile } = useProfile();
+  const [saving, setSaving] = useState(false);
+  
+  const [formData, setFormData] = useState({
+    full_name: "",
+    bio: "",
+    university: "",
+    major: "",
+    year_of_study: "",
+    skill_level: "" as "beginner" | "intermediate" | "advanced" | "expert" | "",
+    learning_style: "" as "visual" | "auditory" | "reading" | "kinesthetic" | "",
+    subjects: [] as string[],
+    interests: [] as string[],
+    availability: {} as Record<string, boolean>,
+  });
 
-  const removeItem = (arr: string[], setter: (arr: string[]) => void, item: string) => {
-    setter(arr.filter(i => i !== item));
+  const [newSubject, setNewSubject] = useState("");
+  const [newInterest, setNewInterest] = useState("");
+
+  useEffect(() => {
+    if (profile) {
+      setFormData({
+        full_name: profile.full_name || "",
+        bio: profile.bio || "",
+        university: profile.university || "",
+        major: profile.major || "",
+        year_of_study: profile.year_of_study || "",
+        skill_level: profile.skill_level || "",
+        learning_style: profile.learning_style || "",
+        subjects: profile.subjects || [],
+        interests: profile.interests || [],
+        availability: (profile.availability as Record<string, boolean>) || {},
+      });
+    }
+  }, [profile]);
+
+  const addSubject = () => {
+    if (newSubject.trim() && !formData.subjects.includes(newSubject.trim())) {
+      setFormData({ ...formData, subjects: [...formData.subjects, newSubject.trim()] });
+      setNewSubject("");
+    }
   };
+
+  const addInterest = () => {
+    if (newInterest.trim() && !formData.interests.includes(newInterest.trim())) {
+      setFormData({ ...formData, interests: [...formData.interests, newInterest.trim()] });
+      setNewInterest("");
+    }
+  };
+
+  const removeSubject = (subject: string) => {
+    setFormData({ ...formData, subjects: formData.subjects.filter(s => s !== subject) });
+  };
+
+  const removeInterest = (interest: string) => {
+    setFormData({ ...formData, interests: formData.interests.filter(i => i !== interest) });
+  };
+
+  const toggleAvailability = (time: string) => {
+    setFormData({
+      ...formData,
+      availability: { ...formData.availability, [time]: !formData.availability[time] },
+    });
+  };
+
+  const handleSave = async () => {
+    setSaving(true);
+    const success = await updateProfile({
+      full_name: formData.full_name || null,
+      bio: formData.bio || null,
+      university: formData.university || null,
+      major: formData.major || null,
+      year_of_study: formData.year_of_study || null,
+      skill_level: formData.skill_level || null,
+      learning_style: formData.learning_style || null,
+      subjects: formData.subjects,
+      interests: formData.interests,
+      availability: formData.availability,
+    });
+    setSaving(false);
+    if (success) {
+      navigate("/profile");
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen pt-32 flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen pt-32 px-4 pb-20">
@@ -43,21 +133,22 @@ const ProfileSetup = () => {
             </div>
 
             <div className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="firstname">First Name</Label>
-                  <Input id="firstname" placeholder="John" />
-                </div>
-                <div>
-                  <Label htmlFor="lastname">Last Name</Label>
-                  <Input id="lastname" placeholder="Doe" />
-                </div>
+              <div>
+                <Label htmlFor="fullname">Full Name</Label>
+                <Input
+                  id="fullname"
+                  value={formData.full_name}
+                  onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
+                  placeholder="John Doe"
+                />
               </div>
 
               <div>
                 <Label htmlFor="bio">Bio</Label>
                 <Textarea 
-                  id="bio" 
+                  id="bio"
+                  value={formData.bio}
+                  onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
                   placeholder="Tell others about your learning journey..."
                   rows={3}
                 />
@@ -65,23 +156,42 @@ const ProfileSetup = () => {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor="year">Academic Year</Label>
-                  <Select>
-                    <SelectTrigger id="year">
-                      <SelectValue placeholder="Select year" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="1">First Year</SelectItem>
-                      <SelectItem value="2">Second Year</SelectItem>
-                      <SelectItem value="3">Third Year</SelectItem>
-                      <SelectItem value="4">Fourth Year</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  <Label htmlFor="university">University</Label>
+                  <Input
+                    id="university"
+                    value={formData.university}
+                    onChange={(e) => setFormData({ ...formData, university: e.target.value })}
+                    placeholder="University name"
+                  />
                 </div>
                 <div>
                   <Label htmlFor="major">Major/Department</Label>
-                  <Input id="major" placeholder="Computer Science" />
+                  <Input
+                    id="major"
+                    value={formData.major}
+                    onChange={(e) => setFormData({ ...formData, major: e.target.value })}
+                    placeholder="Computer Science"
+                  />
                 </div>
+              </div>
+
+              <div>
+                <Label htmlFor="year">Academic Year</Label>
+                <Select
+                  value={formData.year_of_study}
+                  onValueChange={(value) => setFormData({ ...formData, year_of_study: value })}
+                >
+                  <SelectTrigger id="year">
+                    <SelectValue placeholder="Select year" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="1">First Year</SelectItem>
+                    <SelectItem value="2">Second Year</SelectItem>
+                    <SelectItem value="3">Third Year</SelectItem>
+                    <SelectItem value="4">Fourth Year</SelectItem>
+                    <SelectItem value="graduate">Graduate</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
             </div>
           </Card>
@@ -99,45 +209,60 @@ const ProfileSetup = () => {
               <div>
                 <Label>Current Subjects</Label>
                 <div className="flex flex-wrap gap-2 mt-2 mb-3">
-                  {subjects.map((subject) => (
+                  {formData.subjects.map((subject) => (
                     <Badge key={subject} className="gap-1">
                       {subject}
                       <X 
                         className="h-3 w-3 cursor-pointer" 
-                        onClick={() => removeItem(subjects, setSubjects, subject)}
+                        onClick={() => removeSubject(subject)}
                       />
                     </Badge>
                   ))}
                 </div>
                 <div className="flex gap-2">
-                  <Input placeholder="Add a subject..." />
-                  <Button>Add</Button>
+                  <Input
+                    value={newSubject}
+                    onChange={(e) => setNewSubject(e.target.value)}
+                    onKeyPress={(e) => e.key === "Enter" && (e.preventDefault(), addSubject())}
+                    placeholder="Add a subject..."
+                  />
+                  <Button type="button" onClick={addSubject}>Add</Button>
                 </div>
               </div>
 
               <div>
                 <Label>Interests & Learning Goals</Label>
                 <div className="flex flex-wrap gap-2 mt-2 mb-3">
-                  {interests.map((interest) => (
+                  {formData.interests.map((interest) => (
                     <Badge key={interest} variant="outline" className="gap-1">
                       {interest}
                       <X 
                         className="h-3 w-3 cursor-pointer" 
-                        onClick={() => removeItem(interests, setInterests, interest)}
+                        onClick={() => removeInterest(interest)}
                       />
                     </Badge>
                   ))}
                 </div>
                 <div className="flex gap-2">
-                  <Input placeholder="Add an interest..." />
-                  <Button variant="outline">Add</Button>
+                  <Input
+                    value={newInterest}
+                    onChange={(e) => setNewInterest(e.target.value)}
+                    onKeyPress={(e) => e.key === "Enter" && (e.preventDefault(), addInterest())}
+                    placeholder="Add an interest..."
+                  />
+                  <Button type="button" variant="outline" onClick={addInterest}>Add</Button>
                 </div>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="skill-level">Overall Skill Level</Label>
-                  <Select>
+                  <Select
+                    value={formData.skill_level}
+                    onValueChange={(value: "beginner" | "intermediate" | "advanced" | "expert") => 
+                      setFormData({ ...formData, skill_level: value })
+                    }
+                  >
                     <SelectTrigger id="skill-level">
                       <SelectValue placeholder="Select level" />
                     </SelectTrigger>
@@ -145,62 +270,29 @@ const ProfileSetup = () => {
                       <SelectItem value="beginner">Beginner</SelectItem>
                       <SelectItem value="intermediate">Intermediate</SelectItem>
                       <SelectItem value="advanced">Advanced</SelectItem>
+                      <SelectItem value="expert">Expert</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
                 <div>
                   <Label htmlFor="learning-style">Preferred Learning Style</Label>
-                  <Select>
+                  <Select
+                    value={formData.learning_style}
+                    onValueChange={(value: "visual" | "auditory" | "reading" | "kinesthetic") => 
+                      setFormData({ ...formData, learning_style: value })
+                    }
+                  >
                     <SelectTrigger id="learning-style">
                       <SelectValue placeholder="Select style" />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="visual">Visual</SelectItem>
                       <SelectItem value="auditory">Auditory</SelectItem>
-                      <SelectItem value="practical">Practical/Kinesthetic</SelectItem>
                       <SelectItem value="reading">Reading/Writing</SelectItem>
+                      <SelectItem value="kinesthetic">Practical/Kinesthetic</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
-              </div>
-            </div>
-          </Card>
-
-          {/* Learning Preferences */}
-          <Card className="glass-card">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="h-10 w-10 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center">
-                <Brain className="h-5 w-5 text-primary-foreground" />
-              </div>
-              <h2 className="text-2xl font-bold">Learning Preferences</h2>
-            </div>
-
-            <div className="space-y-4">
-              <div>
-                <Label htmlFor="strengths">Strengths</Label>
-                <Textarea 
-                  id="strengths" 
-                  placeholder="What are you good at? (e.g., Quick problem solving, Visual thinking...)"
-                  rows={2}
-                />
-              </div>
-
-              <div>
-                <Label htmlFor="difficulties">Areas for Improvement</Label>
-                <Textarea 
-                  id="difficulties" 
-                  placeholder="What would you like to improve? (e.g., Abstract concepts, Time management...)"
-                  rows={2}
-                />
-              </div>
-
-              <div>
-                <Label htmlFor="goals">Academic Goals</Label>
-                <Textarea 
-                  id="goals" 
-                  placeholder="What do you want to achieve? (e.g., Master calculus, Prepare for exams...)"
-                  rows={2}
-                />
               </div>
             </div>
           </Card>
@@ -219,37 +311,37 @@ const ProfileSetup = () => {
                 <Label>Preferred Study Times</Label>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mt-2">
                   {["Mornings", "Afternoons", "Evenings", "Weekends"].map((time) => (
-                    <Button key={time} variant="outline" className="w-full">
+                    <Button
+                      key={time}
+                      type="button"
+                      variant={formData.availability[time] ? "default" : "outline"}
+                      className="w-full"
+                      onClick={() => toggleAvailability(time)}
+                    >
                       {time}
                     </Button>
                   ))}
                 </div>
-              </div>
-
-              <div>
-                <Label htmlFor="timezone">Timezone</Label>
-                <Select>
-                  <SelectTrigger id="timezone">
-                    <SelectValue placeholder="Select timezone" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="pst">PST (UTC-8)</SelectItem>
-                    <SelectItem value="est">EST (UTC-5)</SelectItem>
-                    <SelectItem value="gmt">GMT (UTC+0)</SelectItem>
-                    <SelectItem value="cet">CET (UTC+1)</SelectItem>
-                  </SelectContent>
-                </Select>
               </div>
             </div>
           </Card>
 
           {/* Save Button */}
           <div className="flex justify-center gap-4">
-            <Button variant="outline" size="lg">
+            <Button variant="outline" size="lg" onClick={() => navigate(-1)}>
               Cancel
             </Button>
-            <Button size="lg" className="bg-gradient-to-r from-primary to-secondary">
-              <Target className="mr-2 h-5 w-5" />
+            <Button
+              size="lg"
+              className="bg-gradient-to-r from-primary to-secondary"
+              onClick={handleSave}
+              disabled={saving}
+            >
+              {saving ? (
+                <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+              ) : (
+                <Target className="mr-2 h-5 w-5" />
+              )}
               Save Profile
             </Button>
           </div>
