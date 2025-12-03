@@ -24,7 +24,7 @@ const Groups = () => {
   });
   const [memberCounts, setMemberCounts] = useState<Record<string, number>>({});
 
-  const { groups, loading, createGroup, joinGroup, leaveGroup, deleteGroup, isMember, isCreator, getMemberCount } = useStudyGroups();
+  const { groups, loading, createGroup, joinGroup, leaveGroup, deleteGroup, isMember, getMemberCount } = useStudyGroups();
   const { user } = useAuth();
 
   useEffect(() => {
@@ -249,7 +249,7 @@ const Groups = () => {
                         Join Group
                       </Button>
                     )}
-                    {isCreator(group.id) && (
+                    {group.created_by === user.id && (
                       <AlertDialog>
                         <AlertDialogTrigger asChild>
                           <Button
