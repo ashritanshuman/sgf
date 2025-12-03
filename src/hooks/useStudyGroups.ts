@@ -111,12 +111,52 @@ export const useStudyGroups = () => {
     return true;
   };
 
+  const deleteGroup = async (groupId: string) => {
+    if (!user) {
+      toast.error('Please sign in to delete a group');
+      return false;
+    }
+
+    // First delete all group members
+    await supabase
+      .from('group_members')
+      .delete()
+      .eq('group_id', groupId);
+
+    // Then delete the group
+    const { error } = await supabase
+      .from('study_groups')
+      .delete()
+      .eq('id', groupId)
+      .eq('created_by', user.id);
+
+    if (error) {
+      toast.error('Failed to delete group');
+      console.error(error);
+      return false;
+    }
+
+    toast.success('Group deleted successfully');
+    fetchGroups();
+    fetchMyMemberships();
+    return true;
+  };
+
   const getMemberCount = async (groupId: string): Promise<number> => {
     const { count } = await supabase
       .from('group_members')
       .select('*', { count: 'exact', head: true })
       .eq('group_id', groupId);
     return count || 0;
+  };
+
+  // Get groups created by the current user
+  const myCreatedGroups = groups.filter(g => g.created_by === user?.id);
+
+  // Check if user is the creator of a group
+  const isCreator = (groupId: string) => {
+    const group = groups.find(g => g.id === groupId);
+    return group?.created_by === user?.id;
   };
 
   useEffect(() => {
@@ -130,12 +170,15 @@ export const useStudyGroups = () => {
   return {
     groups,
     myGroups,
+    myCreatedGroups,
     loading,
     createGroup,
     joinGroup,
     leaveGroup,
+    deleteGroup,
     getMemberCount,
     refetch: fetchGroups,
     isMember: (groupId: string) => myGroups.includes(groupId),
+    isCreator,
   };
 };
