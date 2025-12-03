@@ -1,19 +1,22 @@
 import { motion } from "framer-motion";
 import { useState, useEffect } from "react";
-import { User, Mail, BookOpen, Target, Edit2, Camera, Loader2 } from "lucide-react";
+import { User, Mail, BookOpen, Target, Edit2, Camera, Loader2, Users, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { useProfile } from "@/hooks/useProfile";
 import { useAuth } from "@/contexts/AuthContext";
 import { useStudyProgress } from "@/hooks/useStudyProgress";
 import { useStudyGroups } from "@/hooks/useStudyGroups";
+import { useNavigate } from "react-router-dom";
 
 const Profile = () => {
+  const navigate = useNavigate();
   const { user } = useAuth();
   const { profile, loading, updateProfile } = useProfile();
   const { getTotalStats } = useStudyProgress();
-  const { myGroups } = useStudyGroups();
+  const { myGroups, myCreatedGroups, deleteGroup } = useStudyGroups();
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({
     full_name: "",
@@ -260,6 +263,86 @@ const Profile = () => {
             </div>
           </motion.div>
         </div>
+
+        {/* My Created Groups Section */}
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.8, duration: 0.6 }}
+          className="mt-8 glass-card glow-hover"
+        >
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-2xl font-bold flex items-center gap-2">
+              <Users className="h-6 w-6 text-primary" />
+              Groups You Created
+            </h2>
+            <Button 
+              variant="outline" 
+              onClick={() => navigate('/groups')}
+              className="glass border-primary/50"
+            >
+              View All Groups
+            </Button>
+          </div>
+          
+          {myCreatedGroups.length === 0 ? (
+            <div className="text-center py-8">
+              <Users className="h-12 w-12 mx-auto text-muted-foreground mb-3" />
+              <p className="text-muted-foreground mb-4">You haven't created any groups yet</p>
+              <Button 
+                onClick={() => navigate('/groups')}
+                className="bg-gradient-to-r from-primary to-secondary"
+              >
+                Create Your First Group
+              </Button>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {myCreatedGroups.map((group, index) => (
+                <motion.div
+                  key={group.id}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.1 }}
+                  className="glass rounded-xl p-4 border border-border/20"
+                >
+                  <div className="flex items-start justify-between mb-2">
+                    <h3 className="font-bold text-lg">{group.name}</h3>
+                    <span className="px-2 py-1 rounded-full text-xs glass border border-primary/30 capitalize">
+                      {group.difficulty}
+                    </span>
+                  </div>
+                  <p className="text-sm text-muted-foreground mb-2">{group.subject}</p>
+                  <p className="text-sm text-muted-foreground line-clamp-2 mb-4">
+                    {group.description || "No description"}
+                  </p>
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button variant="destructive" size="sm" className="w-full">
+                        <Trash2 className="h-4 w-4 mr-2" />
+                        Delete Group
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Delete Group</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          Are you sure you want to delete "{group.name}"? This action cannot be undone and will remove all members from the group.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction onClick={() => deleteGroup(group.id)}>
+                          Delete
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                </motion.div>
+              ))}
+            </div>
+          )}
+        </motion.div>
       </motion.div>
     </div>
   );

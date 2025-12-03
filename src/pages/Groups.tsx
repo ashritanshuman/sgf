@@ -1,9 +1,10 @@
 import { motion } from "framer-motion";
 import { useState, useEffect } from "react";
-import { Search, Plus, Users, BookOpen, MapPin, Loader2 } from "lucide-react";
+import { Search, Plus, Users, BookOpen, Loader2, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -23,7 +24,7 @@ const Groups = () => {
   });
   const [memberCounts, setMemberCounts] = useState<Record<string, number>>({});
 
-  const { groups, loading, createGroup, joinGroup, leaveGroup, isMember, getMemberCount } = useStudyGroups();
+  const { groups, loading, createGroup, joinGroup, leaveGroup, deleteGroup, isMember, isCreator, getMemberCount } = useStudyGroups();
   const { user } = useAuth();
 
   useEffect(() => {
@@ -231,22 +232,51 @@ const Groups = () => {
                 </div>
 
                 {user && (
-                  isMember(group.id) ? (
-                    <Button
-                      onClick={() => leaveGroup(group.id)}
-                      variant="outline"
-                      className="w-full"
-                    >
-                      Leave Group
-                    </Button>
-                  ) : (
-                    <Button
-                      onClick={() => joinGroup(group.id)}
-                      className="w-full bg-gradient-to-r from-primary to-secondary hover:opacity-90"
-                    >
-                      Join Group
-                    </Button>
-                  )
+                  <div className="space-y-2">
+                    {isMember(group.id) ? (
+                      <Button
+                        onClick={() => leaveGroup(group.id)}
+                        variant="outline"
+                        className="w-full"
+                      >
+                        Leave Group
+                      </Button>
+                    ) : (
+                      <Button
+                        onClick={() => joinGroup(group.id)}
+                        className="w-full bg-gradient-to-r from-primary to-secondary hover:opacity-90"
+                      >
+                        Join Group
+                      </Button>
+                    )}
+                    {isCreator(group.id) && (
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button
+                            variant="destructive"
+                            className="w-full"
+                          >
+                            <Trash2 className="h-4 w-4 mr-2" />
+                            Delete Group
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Delete Group</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              Are you sure you want to delete "{group.name}"? This action cannot be undone and will remove all members from the group.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogAction onClick={() => deleteGroup(group.id)}>
+                              Delete
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                    )}
+                  </div>
                 )}
               </div>
             </motion.div>
