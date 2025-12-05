@@ -8,9 +8,10 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { User, BookOpen, Brain, Clock, Target, X, Loader2 } from "lucide-react";
+import { User, BookOpen, Brain, Clock, Target, X, Loader2, GraduationCap } from "lucide-react";
 import { useProfile } from "@/hooks/useProfile";
 import { toast } from "sonner";
+import { UNIVERSITIES } from "@/lib/universities";
 
 const ProfileSetup = () => {
   const navigate = useNavigate();
@@ -157,12 +158,21 @@ const ProfileSetup = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="university">University</Label>
-                  <Input
-                    id="university"
+                  <Select
                     value={formData.university}
-                    onChange={(e) => setFormData({ ...formData, university: e.target.value })}
-                    placeholder="University name"
-                  />
+                    onValueChange={(value) => setFormData({ ...formData, university: value })}
+                  >
+                    <SelectTrigger id="university">
+                      <SelectValue placeholder="Select your university" />
+                    </SelectTrigger>
+                    <SelectContent className="max-h-[300px]">
+                      {UNIVERSITIES.map((university) => (
+                        <SelectItem key={university} value={university}>
+                          {university}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
                 <div>
                   <Label htmlFor="major">Major/Department</Label>

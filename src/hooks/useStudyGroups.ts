@@ -7,9 +7,13 @@ import type { Tables, TablesInsert } from '@/integrations/supabase/types';
 type StudyGroup = Tables<'study_groups'>;
 type GroupMember = Tables<'group_members'>;
 
+export interface StudyGroupWithUniversity extends StudyGroup {
+  university: string | null;
+}
+
 export const useStudyGroups = () => {
   const { user } = useAuth();
-  const [groups, setGroups] = useState<StudyGroup[]>([]);
+  const [groups, setGroups] = useState<StudyGroupWithUniversity[]>([]);
   const [myGroups, setMyGroups] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -24,7 +28,7 @@ export const useStudyGroups = () => {
       toast.error('Failed to load groups');
       console.error(error);
     } else {
-      setGroups(data || []);
+      setGroups((data || []) as StudyGroupWithUniversity[]);
     }
     setLoading(false);
   };
@@ -41,7 +45,7 @@ export const useStudyGroups = () => {
     }
   };
 
-  const createGroup = async (group: Omit<TablesInsert<'study_groups'>, 'created_by'>) => {
+  const createGroup = async (group: Omit<TablesInsert<'study_groups'>, 'created_by'> & { university?: string | null }) => {
     if (!user) {
       toast.error('Please sign in to create a group');
       return null;

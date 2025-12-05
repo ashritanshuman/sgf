@@ -43,6 +43,41 @@ export type Database = {
           },
         ]
       }
+      group_requests: {
+        Row: {
+          created_at: string
+          group_id: string
+          id: string
+          requester_id: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          group_id: string
+          id?: string
+          requester_id: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          group_id?: string
+          id?: string
+          requester_id?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "group_requests_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "study_groups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       messages: {
         Row: {
           content: string
@@ -74,6 +109,39 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      notifications: {
+        Row: {
+          created_at: string
+          data: Json | null
+          id: string
+          is_read: boolean
+          message: string
+          title: string
+          type: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          data?: Json | null
+          id?: string
+          is_read?: boolean
+          message: string
+          title: string
+          type: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          data?: Json | null
+          id?: string
+          is_read?: boolean
+          message?: string
+          title?: string
+          type?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       profiles: {
         Row: {
@@ -140,6 +208,7 @@ export type Database = {
           max_members: number | null
           name: string
           subject: string
+          university: string | null
           updated_at: string
         }
         Insert: {
@@ -152,6 +221,7 @@ export type Database = {
           max_members?: number | null
           name: string
           subject: string
+          university?: string | null
           updated_at?: string
         }
         Update: {
@@ -164,6 +234,7 @@ export type Database = {
           max_members?: number | null
           name?: string
           subject?: string
+          university?: string | null
           updated_at?: string
         }
         Relationships: []
