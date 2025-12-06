@@ -13,6 +13,11 @@ interface MessageWithProfile extends Message {
   };
 }
 
+interface FileAttachment {
+  file: File;
+  preview?: string;
+}
+
 export const useMessages = (groupId: string | null) => {
   const { user } = useAuth();
   const [messages, setMessages] = useState<MessageWithProfile[]>([]);
@@ -54,18 +59,55 @@ export const useMessages = (groupId: string | null) => {
     setLoading(false);
   }, [groupId]);
 
-  const sendMessage = async (content: string) => {
+  const uploadFile = async (file: File): Promise<{ url: string; name: string; type: string } | null> => {
+    if (!user) return null;
+
+    const fileExt = file.name.split('.').pop();
+    const fileName = `${user.id}/${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
+
+    const { error: uploadError } = await supabase.storage
+      .from('chat-attachments')
+      .upload(fileName, file);
+
+    if (uploadError) {
+      console.error('Upload error:', uploadError);
+      toast.error('Failed to upload file');
+      return null;
+    }
+
+    const { data: { publicUrl } } = supabase.storage
+      .from('chat-attachments')
+      .getPublicUrl(fileName);
+
+    return {
+      url: publicUrl,
+      name: file.name,
+      type: file.type,
+    };
+  };
+
+  const sendMessage = async (content: string, attachment?: FileAttachment) => {
     if (!user || !groupId) {
       toast.error('Unable to send message');
       return false;
     }
 
+    let fileData: { url: string; name: string; type: string } | null = null;
+
+    if (attachment) {
+      fileData = await uploadFile(attachment.file);
+      if (!fileData) return false;
+    }
+
     const { error } = await supabase
       .from('messages')
       .insert({
-        content,
+        content: content || (fileData ? fileData.name : ''),
         group_id: groupId,
         user_id: user.id,
+        file_url: fileData?.url || null,
+        file_name: fileData?.name || null,
+        file_type: fileData?.type || null,
       });
 
     if (error) {

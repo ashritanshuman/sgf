@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import { useState, useEffect, useRef } from "react";
-import { Send, Paperclip, Smile, Users, Loader2 } from "lucide-react";
+import { Send, Paperclip, Smile, Users, Loader2, X, FileIcon, Image as ImageIcon } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useMessages } from "@/hooks/useMessages";
@@ -13,7 +13,11 @@ const Chat = () => {
   const { groups, myGroups, loading: groupsLoading } = useStudyGroups();
   const [selectedGroupId, setSelectedGroupId] = useState<string | null>(null);
   const [message, setMessage] = useState("");
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [filePreview, setFilePreview] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const myJoinedGroups = groups.filter(g => myGroups.includes(g.id));
   const { messages, loading: messagesLoading, sendMessage, isOwnMessage } = useMessages(selectedGroupId);
@@ -30,11 +34,82 @@ const Chat = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  const handleSendMessage = async () => {
-    if (message.trim()) {
-      await sendMessage(message.trim());
-      setMessage("");
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Limit file size to 10MB
+    if (file.size > 10 * 1024 * 1024) {
+      alert("File size must be less than 10MB");
+      return;
     }
+
+    setSelectedFile(file);
+
+    // Create preview for images
+    if (file.type.startsWith("image/")) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setFilePreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    } else {
+      setFilePreview(null);
+    }
+  };
+
+  const clearSelectedFile = () => {
+    setSelectedFile(null);
+    setFilePreview(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  };
+
+  const handleSendMessage = async () => {
+    if (!message.trim() && !selectedFile) return;
+
+    setUploading(true);
+    const success = await sendMessage(
+      message.trim(),
+      selectedFile ? { file: selectedFile, preview: filePreview || undefined } : undefined
+    );
+
+    if (success) {
+      setMessage("");
+      clearSelectedFile();
+    }
+    setUploading(false);
+  };
+
+  const isImageFile = (fileType: string | null) => fileType?.startsWith("image/");
+
+  const renderAttachment = (msg: typeof messages[0]) => {
+    if (!msg.file_url) return null;
+
+    if (isImageFile(msg.file_type)) {
+      return (
+        <a href={msg.file_url} target="_blank" rel="noopener noreferrer" className="block mt-2">
+          <img
+            src={msg.file_url}
+            alt={msg.file_name || "Image"}
+            className="max-w-full max-h-64 rounded-lg object-cover"
+          />
+        </a>
+      );
+    }
+
+    return (
+      <a
+        href={msg.file_url}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="flex items-center gap-2 mt-2 p-2 rounded-lg bg-background/20 hover:bg-background/30 transition-colors"
+      >
+        <FileIcon className="h-5 w-5 flex-shrink-0" />
+        <span className="text-sm truncate">{msg.file_name || "Download file"}</span>
+      </a>
+    );
   };
 
   if (groupsLoading) {
@@ -145,7 +220,8 @@ const Chat = () => {
                               : "glass border border-white/10"
                           }`}
                         >
-                          <p>{msg.content}</p>
+                          {msg.content && <p>{msg.content}</p>}
+                          {renderAttachment(msg)}
                         </div>
                         <span className="text-xs text-muted-foreground">
                           {format(new Date(msg.created_at), "h:mm a")}
@@ -157,10 +233,52 @@ const Chat = () => {
                 <div ref={messagesEndRef} />
               </div>
 
+              {/* File Preview */}
+              {selectedFile && (
+                <div className="px-4 py-2 border-t border-white/10">
+                  <div className="flex items-center gap-2 p-2 rounded-lg bg-muted/50">
+                    {filePreview ? (
+                      <img src={filePreview} alt="Preview" className="h-12 w-12 object-cover rounded" />
+                    ) : (
+                      <div className="h-12 w-12 flex items-center justify-center rounded bg-muted">
+                        <FileIcon className="h-6 w-6" />
+                      </div>
+                    )}
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium truncate">{selectedFile.name}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {(selectedFile.size / 1024).toFixed(1)} KB
+                      </p>
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={clearSelectedFile}
+                      className="flex-shrink-0"
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              )}
+
               {/* Message Input */}
               <div className="pt-4 border-t border-white/10">
                 <div className="flex items-center gap-2">
-                  <Button variant="ghost" size="icon" className="rounded-full">
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    className="hidden"
+                    onChange={handleFileSelect}
+                    accept="image/*,.pdf,.doc,.docx,.txt,.xlsx,.pptx"
+                  />
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="rounded-full"
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={uploading}
+                  >
                     <Paperclip className="h-5 w-5" />
                   </Button>
                   <Button variant="ghost" size="icon" className="rounded-full">
@@ -171,17 +289,17 @@ const Chat = () => {
                     placeholder="Type a message..."
                     value={message}
                     onChange={(e) => setMessage(e.target.value)}
-                    onKeyPress={(e) => e.key === "Enter" && handleSendMessage()}
+                    onKeyPress={(e) => e.key === "Enter" && !uploading && handleSendMessage()}
                     className="flex-1 bg-transparent border-white/10 focus:border-primary"
-                    disabled={!selectedGroupId}
+                    disabled={!selectedGroupId || uploading}
                   />
                   <Button
                     onClick={handleSendMessage}
                     className="rounded-full bg-gradient-to-r from-primary to-secondary hover:opacity-90"
                     size="icon"
-                    disabled={!selectedGroupId || !message.trim()}
+                    disabled={!selectedGroupId || (!message.trim() && !selectedFile) || uploading}
                   >
-                    <Send className="h-5 w-5" />
+                    {uploading ? <Loader2 className="h-5 w-5 animate-spin" /> : <Send className="h-5 w-5" />}
                   </Button>
                 </div>
               </div>
