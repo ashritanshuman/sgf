@@ -67,19 +67,13 @@ const Navbar = () => {
               <Link
                 key={link.path}
                 to={link.path}
-                className={`relative px-2 py-2 transition-colors duration-300 text-sm whitespace-nowrap ${
+                className={`px-2 py-2 transition-colors duration-300 text-sm whitespace-nowrap ${
                   isActive(link.path)
-                    ? "text-primary"
+                    ? "text-primary font-medium"
                     : "text-muted-foreground hover:text-foreground"
                 }`}
               >
                 {link.name}
-                {isActive(link.path) && (
-                  <motion.div
-                    layoutId="activeNav"
-                    className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-primary to-secondary"
-                  />
-                )}
               </Link>
             ))}
             <DropdownMenu>
