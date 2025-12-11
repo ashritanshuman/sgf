@@ -32,14 +32,14 @@ const Navbar = () => {
 
   const navLinks = [
     { name: "Home", path: "/" },
-    { name: "About", path: "/about" },
+    { name: "AI Assistant", path: "/ai-assistant" },
     { name: "Features", path: "/features" },
     { name: "Dashboard", path: "/dashboard" },
     { name: "Groups", path: "/groups" },
+    { name: "About", path: "/about" },
     { name: "Matching", path: "/matching" },
     { name: "Resources", path: "/resources" },
     { name: "Progress", path: "/progress" },
-    { name: "AI Assistant", path: "/ai-assistant" },
     { name: "Contact", path: "/contact" },
   ];
 

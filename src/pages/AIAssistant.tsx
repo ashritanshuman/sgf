@@ -40,23 +40,40 @@ const AIAssistant = () => {
     <div className="min-h-screen flex flex-col bg-background">
       <Navbar />
       
-      <main className="flex-1 flex flex-col container mx-auto px-4 py-4 max-w-4xl">
-        {/* Header */}
-        <motion.div 
-          initial={{ opacity: 0, y: -10 }}
+      <main className="flex-1 flex flex-col items-center justify-center container mx-auto px-4 py-20 md:py-24">
+        {/* Interactive Heading */}
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="flex items-center justify-between mb-4 flex-shrink-0"
+          className="text-center mb-8"
         >
-          <div className="flex items-center gap-3">
-            <div className="p-2 rounded-lg bg-primary">
-              <Sparkles className="h-5 w-5 text-primary-foreground" />
-            </div>
-            <div>
-              <h1 className="text-lg font-semibold">AI Study Assistant</h1>
-              <p className="text-xs text-muted-foreground">Powered by AI • Always ready to help</p>
-            </div>
-          </div>
-          {messages.length > 0 && (
+          <motion.h2 
+            className="text-3xl md:text-4xl font-bold mb-3"
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.1 }}
+          >
+            <span className="bg-gradient-to-r from-primary via-purple-500 to-pink-500 bg-clip-text text-transparent">
+              Your AI Study Companion
+            </span>
+          </motion.h2>
+          <motion.p 
+            className="text-muted-foreground text-sm md:text-base max-w-md mx-auto"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.2 }}
+          >
+            Ask questions, get explanations, and ace your exams with AI-powered assistance
+          </motion.p>
+        </motion.div>
+
+        {/* Clear Button */}
+        {messages.length > 0 && (
+          <motion.div 
+            initial={{ opacity: 0 }} 
+            animate={{ opacity: 1 }}
+            className="mb-4"
+          >
             <Button 
               variant="ghost" 
               size="sm" 
@@ -64,28 +81,34 @@ const AIAssistant = () => {
               className="gap-1.5 text-muted-foreground hover:text-destructive"
             >
               <Trash2 className="h-4 w-4" />
-              <span className="hidden sm:inline text-xs">Clear</span>
+              <span className="text-xs">Clear Chat</span>
             </Button>
-          )}
-        </motion.div>
+          </motion.div>
+        )}
 
-        {/* Chat Container */}
+        {/* Chat Container - Centered */}
         <motion.div
-          initial={{ opacity: 0, y: 10 }}
+          initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-          className="flex-1 flex flex-col min-h-0"
+          transition={{ delay: 0.3 }}
+          className="w-full max-w-2xl"
         >
-          <Card className="flex-1 flex flex-col border overflow-hidden">
+          <Card className="flex flex-col border shadow-lg overflow-hidden h-[450px] md:h-[500px]">
             <ScrollArea className="flex-1 p-4" ref={scrollRef}>
               {messages.length === 0 ? (
-                <div className="h-full min-h-[300px] flex flex-col items-center justify-center text-center px-4">
+                <div className="h-full flex flex-col items-center justify-center text-center px-4">
                   {/* Empty State */}
-                  <div className="p-4 rounded-full bg-muted border mb-4">
+                  <motion.div 
+                    className="p-4 rounded-full bg-muted border mb-4"
+                    animate={{ 
+                      boxShadow: ["0 0 0 0 rgba(var(--primary), 0)", "0 0 0 8px rgba(var(--primary), 0.1)", "0 0 0 0 rgba(var(--primary), 0)"]
+                    }}
+                    transition={{ duration: 2, repeat: Infinity }}
+                  >
                     <Bot className="h-8 w-8 text-primary" />
-                  </div>
+                  </motion.div>
                   
-                  <h2 className="text-lg font-semibold mb-1">How can I help you study?</h2>
+                  <h3 className="text-lg font-semibold mb-1">How can I help you study?</h3>
                   <p className="text-muted-foreground text-sm mb-6 max-w-sm">
                     I can explain concepts, help with homework, create quizzes, and provide study tips.
                   </p>
@@ -93,18 +116,24 @@ const AIAssistant = () => {
                   {/* Suggested Prompts */}
                   <div className="grid grid-cols-2 gap-2 w-full max-w-md">
                     {suggestedPrompts.map((prompt, i) => (
-                      <Button
+                      <motion.div
                         key={i}
-                        variant="outline"
-                        className="text-left justify-start h-auto py-2.5 px-3 hover:bg-accent"
-                        onClick={() => {
-                          setInput(prompt.text);
-                          inputRef.current?.focus();
-                        }}
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.4 + i * 0.1 }}
                       >
-                        <span className="text-base mr-2 flex-shrink-0">{prompt.icon}</span>
-                        <span className="text-xs truncate">{prompt.text}</span>
-                      </Button>
+                        <Button
+                          variant="outline"
+                          className="w-full text-left justify-start h-auto py-2.5 px-3 hover:bg-accent hover:border-primary/50 transition-all"
+                          onClick={() => {
+                            setInput(prompt.text);
+                            inputRef.current?.focus();
+                          }}
+                        >
+                          <span className="text-base mr-2 flex-shrink-0">{prompt.icon}</span>
+                          <span className="text-xs truncate">{prompt.text}</span>
+                        </Button>
+                      </motion.div>
                     ))}
                   </div>
                 </div>
@@ -192,5 +221,4 @@ const AIAssistant = () => {
     </div>
   );
 };
-
 export default AIAssistant;
