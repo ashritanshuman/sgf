@@ -40,23 +40,23 @@ const AIAssistant = () => {
     <div className="min-h-screen flex flex-col bg-background">
       <Navbar />
       
-      <main className="flex-1 container mx-auto px-4 py-8 max-w-4xl">
+      <main className="flex-1 container mx-auto px-4 py-6 md:py-8 max-w-3xl">
         {/* Header */}
         <motion.div 
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="flex items-center justify-between mb-8"
+          className="flex items-center justify-between mb-6"
         >
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3">
             <div className="relative">
-              <div className="absolute inset-0 bg-primary/20 blur-xl rounded-full" />
-              <div className="relative p-3 rounded-2xl bg-gradient-to-br from-primary to-primary/80 shadow-lg">
-                <Sparkles className="h-7 w-7 text-primary-foreground" />
+              <div className="absolute inset-0 bg-primary/20 blur-lg rounded-full" />
+              <div className="relative p-2.5 rounded-xl bg-primary shadow-md">
+                <Sparkles className="h-5 w-5 text-primary-foreground" />
               </div>
             </div>
             <div>
-              <h1 className="text-2xl md:text-3xl font-bold tracking-tight">AI Study Assistant</h1>
-              <p className="text-sm text-muted-foreground">Powered by AI • Always ready to help</p>
+              <h1 className="text-xl md:text-2xl font-bold tracking-tight">AI Study Assistant</h1>
+              <p className="text-xs text-muted-foreground">Powered by AI • Always ready to help</p>
             </div>
           </div>
           {messages.length > 0 && (
@@ -68,7 +68,7 @@ const AIAssistant = () => {
                 className="gap-2 hover:bg-destructive/10 hover:text-destructive hover:border-destructive/50 transition-colors"
               >
                 <Trash2 className="h-4 w-4" />
-                <span className="hidden sm:inline">Clear Chat</span>
+                <span className="hidden sm:inline">Clear</span>
               </Button>
             </motion.div>
           )}
@@ -79,21 +79,22 @@ const AIAssistant = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
+          className="flex flex-col h-[calc(100vh-200px)] min-h-[400px] max-h-[700px]"
         >
-          <Card className="flex flex-col h-[calc(100vh-280px)] min-h-[500px] border-border/50 shadow-xl overflow-hidden bg-card/50 backdrop-blur-sm">
-            <ScrollArea className="flex-1 p-6" ref={scrollRef}>
+          <Card className="flex flex-col flex-1 border shadow-lg overflow-hidden">
+            <ScrollArea className="flex-1 p-4 md:p-6" ref={scrollRef}>
               {messages.length === 0 ? (
-                <div className="h-full flex flex-col items-center justify-center text-center px-4">
+                <div className="h-full flex flex-col items-center justify-center text-center px-4 py-8">
                   {/* Empty State */}
                   <motion.div
                     initial={{ scale: 0.8, opacity: 0 }}
                     animate={{ scale: 1, opacity: 1 }}
                     transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
-                    className="relative mb-6"
+                    className="relative mb-5"
                   >
-                    <div className="absolute inset-0 bg-primary/10 blur-2xl rounded-full scale-150" />
-                    <div className="relative p-6 rounded-full bg-gradient-to-br from-muted to-muted/50 border border-border/50">
-                      <Bot className="h-14 w-14 text-primary" />
+                    <div className="absolute inset-0 bg-primary/10 blur-xl rounded-full scale-150" />
+                    <div className="relative p-5 rounded-full bg-muted border">
+                      <Bot className="h-10 w-10 text-primary" />
                     </div>
                   </motion.div>
                   
@@ -102,72 +103,72 @@ const AIAssistant = () => {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.3 }}
                   >
-                    <h2 className="text-2xl font-semibold mb-2">How can I help you study?</h2>
-                    <p className="text-muted-foreground mb-8 max-w-md">
-                      I can explain complex concepts, help with homework, create practice quizzes, and provide personalized study tips.
+                    <h2 className="text-xl font-semibold mb-2">How can I help you study?</h2>
+                    <p className="text-muted-foreground text-sm mb-6 max-w-md">
+                      I can explain concepts, help with homework, create quizzes, and provide study tips.
                     </p>
                   </motion.div>
 
-                  {/* Suggested Prompts Grid */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full max-w-xl">
+                  {/* Suggested Prompts */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 w-full max-w-lg">
                     {suggestedPrompts.map((prompt, i) => (
                       <motion.div
                         key={i}
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.4 + i * 0.1 }}
+                        transition={{ delay: 0.4 + i * 0.08 }}
                       >
                         <Button
                           variant="outline"
-                          className="w-full text-left justify-start h-auto py-4 px-4 group hover:bg-primary/5 hover:border-primary/30 transition-all duration-300"
+                          className="w-full text-left justify-start h-auto py-3 px-3 group hover:bg-accent transition-colors"
                           onClick={() => {
                             setInput(prompt.text);
                             inputRef.current?.focus();
                           }}
                         >
-                          <span className="text-xl mr-3 group-hover:scale-110 transition-transform">{prompt.icon}</span>
-                          <span className="line-clamp-2 text-sm">{prompt.text}</span>
+                          <span className="text-lg mr-2">{prompt.icon}</span>
+                          <span className="line-clamp-1 text-xs">{prompt.text}</span>
                         </Button>
                       </motion.div>
                     ))}
                   </div>
                 </div>
               ) : (
-                <div className="space-y-6">
+                <div className="space-y-4">
                   <AnimatePresence mode="popLayout">
                     {messages.map((message, index) => (
                       <motion.div
                         key={index}
-                        initial={{ opacity: 0, y: 20, scale: 0.95 }}
-                        animate={{ opacity: 1, y: 0, scale: 1 }}
-                        exit={{ opacity: 0, scale: 0.95 }}
-                        transition={{ duration: 0.3, type: "spring", stiffness: 300 }}
-                        className={`flex gap-3 ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 0.2 }}
+                        className={`flex gap-2.5 ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
                       >
                         {message.role === 'assistant' && (
-                          <div className="flex-shrink-0 w-9 h-9 rounded-xl bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center border border-primary/20 shadow-sm">
-                            <Bot className="h-5 w-5 text-primary" />
+                          <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center border border-primary/20">
+                            <Bot className="h-4 w-4 text-primary" />
                           </div>
                         )}
                         <div
-                          className={`max-w-[80%] rounded-2xl px-4 py-3 shadow-sm ${
+                          className={`max-w-[85%] rounded-2xl px-3.5 py-2.5 ${
                             message.role === 'user'
-                              ? 'bg-primary text-primary-foreground rounded-br-md'
-                              : 'bg-muted/80 border border-border/50 rounded-bl-md'
+                              ? 'bg-primary text-primary-foreground rounded-br-sm'
+                              : 'bg-muted border rounded-bl-sm'
                           }`}
                         >
                           <div className="text-sm whitespace-pre-wrap break-words leading-relaxed">
                             {message.content || (
                               <span className="flex items-center gap-2 text-muted-foreground">
-                                <Loader2 className="h-4 w-4 animate-spin" />
+                                <Loader2 className="h-3.5 w-3.5 animate-spin" />
                                 Thinking...
                               </span>
                             )}
                           </div>
                         </div>
                         {message.role === 'user' && (
-                          <div className="flex-shrink-0 w-9 h-9 rounded-xl bg-primary flex items-center justify-center shadow-sm">
-                            <User className="h-5 w-5 text-primary-foreground" />
+                          <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
+                            <User className="h-4 w-4 text-primary-foreground" />
                           </div>
                         )}
                       </motion.div>
@@ -184,34 +185,35 @@ const AIAssistant = () => {
                   initial={{ opacity: 0, height: 0 }}
                   animate={{ opacity: 1, height: "auto" }}
                   exit={{ opacity: 0, height: 0 }}
-                  className="px-4 py-3 bg-destructive/10 text-destructive text-sm border-t border-destructive/20 flex items-center gap-2"
+                  className="px-4 py-2.5 bg-destructive/10 text-destructive text-xs border-t flex items-center gap-2"
                 >
-                  <span className="text-destructive">⚠️</span>
+                  <span>⚠️</span>
                   {error}
                 </motion.div>
               )}
             </AnimatePresence>
 
             {/* Input Form */}
-            <form onSubmit={handleSubmit} className="p-4 border-t border-border/50 bg-muted/30">
-              <div className="flex gap-3">
+            <form onSubmit={handleSubmit} className="p-3 border-t bg-muted/20">
+              <div className="flex gap-2">
                 <Input
                   ref={inputRef}
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
                   placeholder="Ask me anything about your studies..."
                   disabled={isLoading}
-                  className="flex-1 h-12 bg-background border-border/50 focus:border-primary/50 transition-colors"
+                  className="flex-1 h-10 bg-background"
                 />
                 <Button 
                   type="submit" 
                   disabled={isLoading || !input.trim()}
-                  className="h-12 px-5 shadow-md hover:shadow-lg transition-shadow"
+                  size="sm"
+                  className="h-10 px-4"
                 >
                   {isLoading ? (
-                    <Loader2 className="h-5 w-5 animate-spin" />
+                    <Loader2 className="h-4 w-4 animate-spin" />
                   ) : (
-                    <Send className="h-5 w-5" />
+                    <Send className="h-4 w-4" />
                   )}
                 </Button>
               </div>
