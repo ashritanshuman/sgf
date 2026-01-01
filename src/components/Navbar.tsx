@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Menu, X, Moon, Sun, GraduationCap, Bell, ChevronDown, LogOut, User, Sparkles } from "lucide-react";
+import { Menu, X, Moon, Sun, GraduationCap, Bell, ChevronDown, LogOut, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -113,11 +113,8 @@ const Navbar = () => {
           <div className="hidden md:flex items-center gap-2 lg:gap-3">
             {user && (
               <Link to="/notifications">
-                <Button variant="ghost" size="icon" className="rounded-full relative">
+                <Button variant="ghost" size="icon" className="rounded-full">
                   <Bell className="h-5 w-5" />
-                  <span className="absolute -top-1 -right-1 h-4 w-4 bg-red-500 rounded-full text-[10px] flex items-center justify-center text-white font-bold">
-                    3
-                  </span>
                 </Button>
               </Link>
             )}
