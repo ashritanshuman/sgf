@@ -23,6 +23,18 @@ export const useMessages = (groupId: string | null) => {
   const [messages, setMessages] = useState<MessageWithProfile[]>([]);
   const [loading, setLoading] = useState(true);
 
+  const getSignedUrl = async (filePath: string): Promise<string | null> => {
+    const { data, error } = await supabase.storage
+      .from('chat-attachments')
+      .createSignedUrl(filePath, 3600); // 1 hour expiry
+
+    if (error) {
+      console.error('Failed to get signed URL:', error);
+      return null;
+    }
+    return data.signedUrl;
+  };
+
   const fetchMessages = useCallback(async () => {
     if (!groupId) {
       setMessages([]);
@@ -49,10 +61,21 @@ export const useMessages = (groupId: string | null) => {
 
       const profileMap = new Map(profiles?.map(p => [p.user_id, p]));
       
-      const messagesWithProfiles = (data || []).map(m => ({
-        ...m,
-        profile: profileMap.get(m.user_id),
-      }));
+      // Generate signed URLs for attachments
+      const messagesWithProfiles = await Promise.all(
+        (data || []).map(async (m) => {
+          let signedFileUrl = m.file_url;
+          if (m.file_url) {
+            // file_url now stores the path, generate signed URL
+            signedFileUrl = await getSignedUrl(m.file_url);
+          }
+          return {
+            ...m,
+            file_url: signedFileUrl,
+            profile: profileMap.get(m.user_id),
+          };
+        })
+      );
 
       setMessages(messagesWithProfiles);
     }
@@ -63,11 +86,11 @@ export const useMessages = (groupId: string | null) => {
     if (!user) return null;
 
     const fileExt = file.name.split('.').pop();
-    const fileName = `${user.id}/${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
+    const filePath = `${user.id}/${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
 
     const { error: uploadError } = await supabase.storage
       .from('chat-attachments')
-      .upload(fileName, file);
+      .upload(filePath, file);
 
     if (uploadError) {
       console.error('Upload error:', uploadError);
@@ -75,12 +98,9 @@ export const useMessages = (groupId: string | null) => {
       return null;
     }
 
-    const { data: { publicUrl } } = supabase.storage
-      .from('chat-attachments')
-      .getPublicUrl(fileName);
-
+    // Store the file path, not the public URL (bucket is now private)
     return {
-      url: publicUrl,
+      url: filePath,
       name: file.name,
       type: file.type,
     };
@@ -145,7 +165,17 @@ export const useMessages = (groupId: string | null) => {
             .eq('user_id', newMessage.user_id)
             .maybeSingle();
 
-          setMessages(prev => [...prev, { ...newMessage, profile: profile || undefined }]);
+          // Generate signed URL for new message attachment
+          let signedFileUrl = newMessage.file_url;
+          if (newMessage.file_url) {
+            signedFileUrl = await getSignedUrl(newMessage.file_url);
+          }
+
+          setMessages(prev => [...prev, { 
+            ...newMessage, 
+            file_url: signedFileUrl,
+            profile: profile || undefined 
+          }]);
         }
       )
       .subscribe();
