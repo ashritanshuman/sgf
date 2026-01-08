@@ -108,12 +108,12 @@ const Home = () => {
             className="flex flex-col sm:flex-row gap-4 justify-center"
           >
             <Link to="/signup" className="w-full sm:w-auto">
-              <Button size="lg" className="bg-gradient-to-r from-primary to-secondary hover:opacity-90 glow text-base sm:text-lg px-6 sm:px-8 py-5 sm:py-6 w-full sm:w-auto">
+              <Button size="lg" className="text-base sm:text-lg px-6 sm:px-8 py-5 sm:py-6 w-full sm:w-auto">
                 Get Started
               </Button>
             </Link>
             <Link to="/groups" className="w-full sm:w-auto">
-              <Button size="lg" variant="outline" className="glass border-primary/50 hover:border-primary text-base sm:text-lg px-6 sm:px-8 py-5 sm:py-6 w-full sm:w-auto">
+              <Button size="lg" variant="outline" className="text-base sm:text-lg px-6 sm:px-8 py-5 sm:py-6 w-full sm:w-auto">
                 Join a Group
               </Button>
             </Link>
@@ -166,8 +166,8 @@ const Home = () => {
                 whileHover={{ scale: 1.05, y: -5 }}
                 className="glass-card group cursor-pointer glow-hover"
               >
-                <div className="p-3 rounded-xl bg-gradient-to-br from-primary to-secondary w-fit mb-4 group-hover:scale-110 transition-transform">
-                  <feature.icon className="h-6 w-6 text-primary-foreground" />
+                <div className="p-3 rounded-xl bg-foreground w-fit mb-4 group-hover:scale-110 transition-transform">
+                  <feature.icon className="h-6 w-6 text-background" />
                 </div>
                 <h3 className="text-xl font-bold mb-2">{feature.title}</h3>
                 <p className="text-muted-foreground">{feature.description}</p>
@@ -194,7 +194,7 @@ const Home = () => {
               Join our community today and start collaborating with students worldwide.
             </p>
             <Link to="/signup">
-              <Button size="lg" className="bg-gradient-to-r from-primary to-secondary hover:opacity-90 text-base sm:text-lg px-6 sm:px-8 py-5 sm:py-6 w-full sm:w-auto">
+              <Button size="lg" className="text-base sm:text-lg px-6 sm:px-8 py-5 sm:py-6 w-full sm:w-auto">
                 Create Your Free Account
               </Button>
             </Link>
