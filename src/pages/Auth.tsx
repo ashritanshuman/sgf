@@ -22,6 +22,7 @@ const Auth = () => {
   const [fullName, setFullName] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [resetEmailSent, setResetEmailSent] = useState(false);
+  const [verificationEmailSent, setVerificationEmailSent] = useState(false);
   const [errors, setErrors] = useState<{ email?: string; password?: string; confirmPassword?: string; fullName?: string }>({});
   
   const navigate = useNavigate();
@@ -111,11 +112,7 @@ const Auth = () => {
             });
           }
         } else {
-          toast({
-            title: "Welcome to StudySync!",
-            description: "Your account has been created successfully.",
-          });
-          navigate('/profile-setup');
+          setVerificationEmailSent(true);
         }
       }
     } catch (err) {
@@ -189,6 +186,49 @@ const Auth = () => {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
+
+  // Email Verification Sent Success
+  if (verificationEmailSent) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-muted/30 to-background p-4">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.5 }}
+          className="w-full max-w-md"
+        >
+          <div className="glass-card p-8 text-center space-y-4">
+            <div className="flex justify-center">
+              <div className="p-3 rounded-full bg-primary/10">
+                <Mail className="w-12 h-12 text-primary" />
+              </div>
+            </div>
+            <h1 className="text-2xl font-bold">Verify Your Email</h1>
+            <p className="text-muted-foreground">
+              We've sent a verification link to <span className="font-medium text-foreground">{email}</span>
+            </p>
+            <p className="text-sm text-muted-foreground">
+              Please check your inbox and click the link to activate your account.
+            </p>
+            <Button
+              variant="outline"
+              className="w-full h-12"
+              onClick={() => {
+                setVerificationEmailSent(false);
+                setIsLogin(true);
+                setEmail('');
+                setPassword('');
+                setFullName('');
+              }}
+            >
+              <ArrowLeft className="mr-2 w-4 h-4" />
+              Back to Sign In
+            </Button>
+          </div>
+        </motion.div>
       </div>
     );
   }
