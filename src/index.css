@@ -193,22 +193,22 @@ All colors MUST be HSL.
 
 @layer utilities {
   .glass {
-    @apply bg-white/10 dark:bg-white/5 backdrop-blur-xl border border-white/20 dark:border-white/10;
+    @apply bg-card border border-border;
   }
 
   .glass-card {
-    @apply glass rounded-2xl p-6 shadow-xl hover:shadow-2xl transition-all duration-300;
+    @apply bg-card rounded-2xl p-6 border border-border shadow-lg hover:shadow-xl transition-all duration-300;
   }
 
   .gradient-text {
-    @apply bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent;
+    @apply text-foreground;
   }
 
   .glow {
-    @apply shadow-[0_0_30px_rgba(255,255,255,0.2)] dark:shadow-[0_0_30px_rgba(255,255,255,0.1)];
+    @apply shadow-lg;
   }
 
   .glow-hover {
-    @apply hover:shadow-[0_0_40px_rgba(255,255,255,0.3)] dark:hover:shadow-[0_0_40px_rgba(255,255,255,0.2)] transition-shadow duration-300;
+    @apply hover:shadow-xl transition-shadow duration-300;
   }
 }

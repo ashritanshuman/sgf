@@ -62,7 +62,6 @@ const Home = () => {
     <div className="min-h-screen">
       {/* Hero Section */}
       <section className="relative pt-32 lg:pt-40 pb-24 lg:pb-32 px-4 overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-secondary/10 to-transparent pointer-events-none" />
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
