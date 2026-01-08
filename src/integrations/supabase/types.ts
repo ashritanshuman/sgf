@@ -348,9 +348,54 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      public_profiles: {
+        Row: {
+          avatar_url: string | null
+          full_name: string | null
+          learning_style: Database["public"]["Enums"]["learning_style"] | null
+          skill_level: Database["public"]["Enums"]["skill_level"] | null
+          subjects: string[] | null
+          university: string | null
+          user_id: string | null
+          year_of_study: string | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          full_name?: string | null
+          learning_style?: Database["public"]["Enums"]["learning_style"] | null
+          skill_level?: Database["public"]["Enums"]["skill_level"] | null
+          subjects?: string[] | null
+          university?: string | null
+          user_id?: string | null
+          year_of_study?: string | null
+        }
+        Update: {
+          avatar_url?: string | null
+          full_name?: string | null
+          learning_style?: Database["public"]["Enums"]["learning_style"] | null
+          skill_level?: Database["public"]["Enums"]["skill_level"] | null
+          subjects?: string[] | null
+          university?: string | null
+          user_id?: string | null
+          year_of_study?: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
+      get_group_member_profile: {
+        Args: { _member_user_id: string }
+        Returns: {
+          avatar_url: string
+          full_name: string
+          learning_style: Database["public"]["Enums"]["learning_style"]
+          skill_level: Database["public"]["Enums"]["skill_level"]
+          subjects: string[]
+          university: string
+          user_id: string
+          year_of_study: string
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
