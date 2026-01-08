@@ -105,15 +105,15 @@ const Navbar = () => {
     <motion.nav
       initial={{ y: -100 }}
       animate={{ y: 0 }}
-      className="fixed top-0 left-0 right-0 z-50 glass border-b border-white/10"
+      className="fixed top-0 left-0 right-0 z-50 bg-background border-b border-border"
     >
       <div className="container mx-auto px-3 sm:px-4 py-3 sm:py-4">
         <div className="flex items-center justify-between">
           <Link to="/" className="flex items-center gap-2 group">
-            <div className="p-1.5 sm:p-2 rounded-xl bg-gradient-to-br from-primary to-secondary glow-hover">
-              <GraduationCap className="h-5 w-5 sm:h-6 sm:w-6 text-primary-foreground" />
+            <div className="p-1.5 sm:p-2 rounded-xl bg-foreground">
+              <GraduationCap className="h-5 w-5 sm:h-6 sm:w-6 text-background" />
             </div>
-            <span className="text-lg sm:text-xl font-bold gradient-text">SGF</span>
+            <span className="text-lg sm:text-xl font-bold text-foreground">SGF</span>
           </Link>
 
           {/* Desktop Navigation */}
@@ -144,7 +144,7 @@ const Navbar = () => {
               </DropdownMenuTrigger>
               <DropdownMenuContent 
                 align="end" 
-                className="w-48 bg-background/95 backdrop-blur-sm border-border z-50"
+                className="w-48 bg-background border-border z-50"
               >
                 {navLinks.slice(5).map((link) => (
                   <DropdownMenuItem key={link.path} asChild>
@@ -218,12 +218,12 @@ const Navbar = () => {
             ) : (
               <>
                 <Link to="/auth">
-                  <Button variant="outline" size="sm" className="glass border-primary/50 hover:border-primary">
+                  <Button variant="outline" size="sm">
                     Login
                   </Button>
                 </Link>
                 <Link to="/auth?mode=signup">
-                  <Button size="sm" className="bg-gradient-to-r from-primary to-secondary hover:opacity-90">
+                  <Button size="sm">
                     Sign Up
                   </Button>
                 </Link>
@@ -238,7 +238,7 @@ const Navbar = () => {
                 variant="outline"
                 size="sm"
                 onClick={handleInstallClick}
-                className="gap-1.5 text-xs border-primary/50 text-primary hover:bg-primary/10"
+                className="gap-1.5 text-xs"
               >
                 <Download className="h-4 w-4" />
                 Install
@@ -278,8 +278,8 @@ const Navbar = () => {
                 onClick={() => setIsOpen(false)}
                 className={`block px-4 py-2 rounded-lg transition-colors ${
                   isActive(link.path)
-                    ? "bg-primary/20 text-primary"
-                    : "hover:bg-white/5"
+                    ? "bg-muted text-foreground font-medium"
+                    : "hover:bg-muted"
                 }`}
               >
                 {link.name}
@@ -312,7 +312,7 @@ const Navbar = () => {
                     </Button>
                   </Link>
                   <Link to="/auth?mode=signup" className="flex-1" onClick={() => setIsOpen(false)}>
-                    <Button className="w-full bg-gradient-to-r from-primary to-secondary">
+                    <Button className="w-full">
                       Sign Up
                     </Button>
                   </Link>
