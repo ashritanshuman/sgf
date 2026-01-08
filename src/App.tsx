@@ -26,6 +26,7 @@ import Notifications from "./pages/Notifications";
 import ProfileSetup from "./pages/ProfileSetup";
 import AIAssistant from "./pages/AIAssistant";
 import Install from "./pages/Install";
+import ResetPassword from "./pages/ResetPassword";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -63,7 +64,7 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 
 const AppContent = () => {
   const location = useLocation();
-  const isAuthPage = location.pathname === "/auth";
+  const isAuthPage = location.pathname === "/auth" || location.pathname === "/reset-password";
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -78,6 +79,7 @@ const AppContent = () => {
             <Route path="/contact" element={<PageTransition><Contact /></PageTransition>} />
             <Route path="/install" element={<PageTransition><Install /></PageTransition>} />
             <Route path="/auth" element={<PageTransition><Auth /></PageTransition>} />
+            <Route path="/reset-password" element={<PageTransition><ResetPassword /></PageTransition>} />
             
             {/* Protected Routes */}
             <Route path="/dashboard" element={<ProtectedRoute><PageTransition><Dashboard /></PageTransition></ProtectedRoute>} />

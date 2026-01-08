@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Mail, Lock, Eye, EyeOff, User, ArrowRight, BookOpen } from 'lucide-react';
+import { Mail, Lock, Eye, EyeOff, User, ArrowRight, BookOpen, ArrowLeft, CheckCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
@@ -14,17 +14,19 @@ const passwordSchema = z.string().min(6, 'Password must be at least 6 characters
 const Auth = () => {
   const [searchParams] = useSearchParams();
   const [isLogin, setIsLogin] = useState(searchParams.get('mode') !== 'signup');
+  const [isForgotPassword, setIsForgotPassword] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [fullName, setFullName] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [resetEmailSent, setResetEmailSent] = useState(false);
   const [errors, setErrors] = useState<{ email?: string; password?: string; confirmPassword?: string; fullName?: string }>({});
   
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { user, signIn, signUp, signInWithGoogle, loading } = useAuth();
+  const { user, signIn, signUp, signInWithGoogle, resetPassword, loading } = useAuth();
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
 
   useEffect(() => {
@@ -33,7 +35,7 @@ const Auth = () => {
     }
   }, [user, loading, navigate]);
 
-  const validateForm = () => {
+  const validateForm = (forgotPasswordMode = false) => {
     const newErrors: typeof errors = {};
     
     const emailResult = emailSchema.safeParse(email);
@@ -41,17 +43,19 @@ const Auth = () => {
       newErrors.email = emailResult.error.errors[0].message;
     }
     
-    const passwordResult = passwordSchema.safeParse(password);
-    if (!passwordResult.success) {
-      newErrors.password = passwordResult.error.errors[0].message;
-    }
-    
-    if (!isLogin) {
-      if (!fullName.trim()) {
-        newErrors.fullName = 'Full name is required';
+    if (!forgotPasswordMode) {
+      const passwordResult = passwordSchema.safeParse(password);
+      if (!passwordResult.success) {
+        newErrors.password = passwordResult.error.errors[0].message;
       }
-      if (password !== confirmPassword) {
-        newErrors.confirmPassword = 'Passwords do not match';
+      
+      if (!isLogin) {
+        if (!fullName.trim()) {
+          newErrors.fullName = 'Full name is required';
+        }
+        if (password !== confirmPassword) {
+          newErrors.confirmPassword = 'Passwords do not match';
+        }
       }
     }
     
@@ -143,7 +147,41 @@ const Auth = () => {
         variant: "destructive",
       });
     } finally {
-      setIsGoogleLoading(false);
+    setIsGoogleLoading(false);
+    }
+  };
+
+  const handleForgotPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!validateForm(true)) return;
+    
+    setIsSubmitting(true);
+    
+    try {
+      const { error } = await resetPassword(email);
+      
+      if (error) {
+        toast({
+          title: "Reset Failed",
+          description: error.message,
+          variant: "destructive",
+        });
+      } else {
+        setResetEmailSent(true);
+        toast({
+          title: "Email Sent!",
+          description: "Check your inbox for the password reset link.",
+        });
+      }
+    } catch (err) {
+      toast({
+        title: "Error",
+        description: "Something went wrong. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -151,6 +189,120 @@ const Auth = () => {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
+
+  // Forgot Password - Email Sent Success
+  if (resetEmailSent) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-muted/30 to-background p-4">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.5 }}
+          className="w-full max-w-md"
+        >
+          <div className="glass-card p-8 text-center space-y-4">
+            <div className="flex justify-center">
+              <div className="p-3 rounded-full bg-green-500/10">
+                <CheckCircle className="w-12 h-12 text-green-500" />
+              </div>
+            </div>
+            <h1 className="text-2xl font-bold">Check Your Email</h1>
+            <p className="text-muted-foreground">
+              We've sent a password reset link to <span className="font-medium text-foreground">{email}</span>
+            </p>
+            <Button
+              variant="outline"
+              className="w-full h-12"
+              onClick={() => {
+                setResetEmailSent(false);
+                setIsForgotPassword(false);
+                setEmail('');
+              }}
+            >
+              <ArrowLeft className="mr-2 w-4 h-4" />
+              Back to Sign In
+            </Button>
+          </div>
+        </motion.div>
+      </div>
+    );
+  }
+
+  // Forgot Password Form
+  if (isForgotPassword) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-muted/30 to-background p-4">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          className="w-full max-w-md"
+        >
+          <div className="glass-card p-8 space-y-6">
+            <div className="text-center space-y-2">
+              <div className="flex items-center justify-center gap-2 mb-4">
+                <div className="p-2 rounded-xl bg-primary/10">
+                  <BookOpen className="w-8 h-8 text-primary" />
+                </div>
+                <span className="text-2xl font-bold">StudySync</span>
+              </div>
+              <h1 className="text-2xl font-bold">Reset Password</h1>
+              <p className="text-muted-foreground">
+                Enter your email and we'll send you a reset link
+              </p>
+            </div>
+
+            <form onSubmit={handleForgotPassword} className="space-y-4">
+              <div className="space-y-2">
+                <div className="relative">
+                  <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-5 h-5" />
+                  <Input
+                    type="email"
+                    placeholder="Email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="pl-10 h-12"
+                  />
+                </div>
+                {errors.email && (
+                  <p className="text-sm text-destructive">{errors.email}</p>
+                )}
+              </div>
+
+              <Button 
+                type="submit" 
+                className="w-full h-12 text-base font-medium"
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? (
+                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-primary-foreground" />
+                ) : (
+                  <>
+                    Send Reset Link
+                    <ArrowRight className="ml-2 w-5 h-5" />
+                  </>
+                )}
+              </Button>
+            </form>
+
+            <div className="text-center">
+              <button
+                type="button"
+                onClick={() => {
+                  setIsForgotPassword(false);
+                  setErrors({});
+                }}
+                className="text-primary font-medium hover:underline inline-flex items-center"
+              >
+                <ArrowLeft className="mr-1 w-4 h-4" />
+                Back to Sign In
+              </button>
+            </div>
+          </div>
+        </motion.div>
       </div>
     );
   }
@@ -256,6 +408,21 @@ const Auth = () => {
                 {errors.confirmPassword && (
                   <p className="text-sm text-destructive">{errors.confirmPassword}</p>
                 )}
+              </div>
+            )}
+
+            {isLogin && (
+              <div className="text-right">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsForgotPassword(true);
+                    setErrors({});
+                  }}
+                  className="text-sm text-muted-foreground hover:text-primary transition-colors"
+                >
+                  Forgot password?
+                </button>
               </div>
             )}
 
