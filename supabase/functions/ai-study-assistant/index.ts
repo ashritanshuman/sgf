@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -6,20 +7,107 @@ const corsHeaders = {
 };
 
 serve(async (req) => {
+  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    const { messages } = await req.json();
+    // === Authentication ===
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader?.startsWith('Bearer ')) {
+      console.error('Missing or invalid Authorization header');
+      return new Response(JSON.stringify({ error: 'Unauthorized - Please sign in to use the AI assistant' }), {
+        status: 401,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    const supabase = createClient(
+      Deno.env.get('SUPABASE_URL')!,
+      Deno.env.get('SUPABASE_ANON_KEY')!,
+      { global: { headers: { Authorization: authHeader } } }
+    );
+
+    // Verify the JWT by getting the user
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+
+    if (authError || !user) {
+      console.error('JWT verification failed:', authError?.message);
+      return new Response(JSON.stringify({ error: 'Unauthorized - Invalid or expired session' }), {
+        status: 401,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    const userId = user.id;
+    console.log('Authenticated user:', userId);
+
+    // === Input Validation ===
+    let body;
+    try {
+      body = await req.json();
+    } catch {
+      return new Response(JSON.stringify({ error: 'Invalid JSON' }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    // Validate messages structure
+    if (!body.messages || !Array.isArray(body.messages)) {
+      return new Response(JSON.stringify({ error: 'Invalid request: messages must be an array' }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    const { messages } = body;
+
+    // Limit conversation length
+    if (messages.length > 50) {
+      return new Response(JSON.stringify({ error: 'Conversation too long. Maximum 50 messages.' }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    // Validate each message
+    for (const msg of messages) {
+      if (!msg.role || !msg.content) {
+        return new Response(JSON.stringify({ error: 'Invalid message format' }), {
+          status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+
+      if (!['user', 'assistant'].includes(msg.role)) {
+        return new Response(JSON.stringify({ error: 'Invalid message role' }), {
+          status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+
+      // Limit message content length
+      if (typeof msg.content !== 'string' || msg.content.length > 10000) {
+        return new Response(JSON.stringify({ error: 'Message content too long. Maximum 10,000 characters per message.' }), {
+          status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+    }
+
+    // === API Key Check ===
     const OPENROUTER_API_KEY = Deno.env.get('OPENROUTER_API_KEY');
     
     if (!OPENROUTER_API_KEY) {
-      throw new Error('OPENROUTER_API_KEY is not configured');
+      console.error('OPENROUTER_API_KEY is not configured');
+      throw new Error('AI service is not properly configured');
     }
 
-    console.log('Processing AI study assistant request with', messages.length, 'messages');
+    console.log('Processing AI study assistant request for user', userId, 'with', messages.length, 'messages');
 
+    // === AI Request ===
     const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
       method: "POST",
       headers: {
