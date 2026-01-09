@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Menu, X, Moon, Sun, GraduationCap, Bell, ChevronDown, LogOut, User, Download } from "lucide-react";
+import { Menu, X, Moon, Sun, GraduationCap, Bell, LogOut, User, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useAuth } from "@/contexts/AuthContext";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { useTheme } from "@/hooks/useTheme";
 
 interface BeforeInstallPromptEvent extends Event {
   prompt: () => Promise<void>;
@@ -20,13 +21,13 @@ interface BeforeInstallPromptEvent extends Event {
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const [isDark, setIsDark] = useState(true);
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [isInstalled, setIsInstalled] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
   const { user, signOut } = useAuth();
+  const { isDark, toggleTheme } = useTheme();
 
   useEffect(() => {
     // Check if already installed
@@ -74,10 +75,6 @@ const Navbar = () => {
 
   const showInstallButton = isMobile && !isInstalled;
 
-  const toggleTheme = () => {
-    setIsDark(!isDark);
-    document.documentElement.classList.toggle("dark");
-  };
 
   const handleSignOut = async () => {
     await signOut();
