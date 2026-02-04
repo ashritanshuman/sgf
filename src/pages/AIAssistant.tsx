@@ -89,7 +89,7 @@ const AIAssistant = () => {
           transition={{ delay: 0.3 }}
           className="w-full max-w-2xl"
         >
-          <Card className="flex flex-col border shadow-lg overflow-hidden h-[450px] md:h-[500px]">
+          <Card className="flex flex-col border shadow-lg overflow-hidden h-[450px] md:h-[500px] rounded-lg">
             <ScrollArea className="flex-1 p-4" ref={scrollRef}>
               {messages.length === 0 ? (
                 <div className="h-full flex flex-col items-center justify-center text-center px-4">
