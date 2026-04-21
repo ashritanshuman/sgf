@@ -16,6 +16,8 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { UNIVERSITIES } from "@/lib/universities";
+import { scoreUniversity } from "@/lib/universitySearch";
+import { useMemo } from "react";
 
 interface UniversityPickerProps {
   value: string;
@@ -33,6 +35,17 @@ export const UniversityPicker = ({
   className,
 }: UniversityPickerProps) => {
   const [open, setOpen] = useState(false);
+  const [query, setQuery] = useState("");
+
+  const results = useMemo(() => {
+    if (!query.trim()) return UNIVERSITIES.slice(0, 200).map((name) => ({ name, score: 1 }));
+    const scored = UNIVERSITIES
+      .map((name) => ({ name, score: scoreUniversity(name, query) }))
+      .filter((r) => r.score > 0)
+      .sort((a, b) => b.score - a.score || a.name.localeCompare(b.name))
+      .slice(0, 100);
+    return scored;
+  }, [query]);
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -57,31 +70,32 @@ export const UniversityPicker = ({
         className="w-[--radix-popover-trigger-width] p-0 z-50 bg-popover"
         align="start"
       >
-        <Command>
-          <CommandInput placeholder="Search universities..." />
+        <Command shouldFilter={false}>
+          <CommandInput
+            placeholder="Search (e.g. IIT Bombay, MIT, VIT)..."
+            value={query}
+            onValueChange={setQuery}
+          />
           <CommandList>
             <CommandEmpty>No university found.</CommandEmpty>
             <CommandGroup>
-              {UNIVERSITIES.map((uni) => (
+              {results.map(({ name }) => (
                 <CommandItem
-                  key={uni}
-                  value={uni}
-                  onSelect={(currentValue) => {
-                    // Command lowercases value; resolve to canonical name
-                    const match = UNIVERSITIES.find(
-                      (u) => u.toLowerCase() === currentValue.toLowerCase()
-                    );
-                    onChange(match || uni);
+                  key={name}
+                  value={name}
+                  onSelect={() => {
+                    onChange(name);
                     setOpen(false);
+                    setQuery("");
                   }}
                 >
                   <Check
                     className={cn(
                       "mr-2 h-4 w-4",
-                      value === uni ? "opacity-100" : "opacity-0"
+                      value === name ? "opacity-100" : "opacity-0"
                     )}
                   />
-                  <span className="truncate">{uni}</span>
+                  <span className="truncate">{name}</span>
                 </CommandItem>
               ))}
             </CommandGroup>
