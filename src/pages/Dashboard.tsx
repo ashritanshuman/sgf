@@ -15,6 +15,7 @@ import { useStudyGroups } from "@/hooks/useStudyGroups";
 import { useStudyProgress } from "@/hooks/useStudyProgress";
 import { useStudySessions } from "@/hooks/useStudySessions";
 import { useProfile } from "@/hooks/useProfile";
+import { UniversityGroupsWidget } from "@/components/dashboard/UniversityGroupsWidget";
 import { format, isAfter } from "date-fns";
 
 const Dashboard = () => {
@@ -112,6 +113,11 @@ const Dashboard = () => {
               <div className="text-muted-foreground">{stat.label}</div>
             </motion.div>
           ))}
+        </div>
+
+        {/* University Groups Widget */}
+        <div className="mb-8">
+          <UniversityGroupsWidget university={profile?.university} groups={groups} />
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
