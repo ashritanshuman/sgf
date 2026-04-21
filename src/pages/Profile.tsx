@@ -11,7 +11,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useStudyProgress } from "@/hooks/useStudyProgress";
 import { useStudyGroups } from "@/hooks/useStudyGroups";
 import { useNavigate } from "react-router-dom";
-import { UNIVERSITIES } from "@/lib/universities";
+import { UniversityPicker } from "@/components/UniversityPicker";
 
 const Profile = () => {
   const navigate = useNavigate();
@@ -268,21 +268,12 @@ const Profile = () => {
                   <div className="flex-1">
                     <p className="text-sm text-muted-foreground">University</p>
                     {isEditing ? (
-                      <Select
-                        value={formData.university}
-                        onValueChange={(value) => setFormData({ ...formData, university: value })}
-                      >
-                        <SelectTrigger className="mt-1 bg-background">
-                          <SelectValue placeholder="Select your university" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {UNIVERSITIES.map((uni) => (
-                            <SelectItem key={uni} value={uni}>
-                              {uni}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                      <div className="mt-1">
+                        <UniversityPicker
+                          value={formData.university}
+                          onChange={(value) => setFormData({ ...formData, university: value })}
+                        />
+                      </div>
                     ) : (
                       <p className="font-medium">{profile?.university || "Not set"}</p>
                     )}
