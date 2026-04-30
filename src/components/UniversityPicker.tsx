@@ -1,5 +1,5 @@
-import { useState, useMemo, useDeferredValue } from "react";
-import { Check, ChevronsUpDown, Search } from "lucide-react";
+import { useEffect, useState, useMemo, useDeferredValue } from "react";
+import { Check, ChevronsUpDown, Clock, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import {
@@ -9,6 +9,7 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
+  CommandSeparator,
 } from "@/components/ui/command";
 import {
   Popover,
@@ -19,6 +20,7 @@ import { UNIVERSITIES } from "@/lib/universities";
 import { explainMatch, type MatchExplanation } from "@/lib/universitySearch";
 import { useUniversities } from "@/hooks/useUniversities";
 import { useDebouncedValue } from "@/hooks/useDebouncedValue";
+import { useUniversityPickerHistory } from "@/hooks/useUniversityPickerHistory";
 
 interface UniversityPickerProps {
   value: string;
@@ -36,14 +38,26 @@ export const UniversityPicker = ({
   className,
 }: UniversityPickerProps) => {
   const [open, setOpen] = useState(false);
-  const [query, setQuery] = useState("");
+  const { lastQuery, setLastQuery, recents, recordSelection, clearHistory } =
+    useUniversityPickerHistory();
+
+  // Restore the last query on first mount so reopening picks up where you left off.
+  const [query, setQuery] = useState(lastQuery);
+
+  // Persist query (debounced) so it survives reloads without thrashing storage.
+  const persistedQuery = useDebouncedValue(query, 250);
+  useEffect(() => {
+    if (persistedQuery !== lastQuery) setLastQuery(persistedQuery);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [persistedQuery]);
+
   const { universities: dbUniversities } = useUniversities();
 
   // Two-stage smoothing: debounce keystrokes (120ms) AND let React deprioritize
   // the heavy ranking work so typing stays buttery on low-end mobile CPUs.
   const debouncedQuery = useDebouncedValue(query, 120);
   const deferredQuery = useDeferredValue(debouncedQuery);
-  const isStale = deferredQuery !== query.trim() ? false : deferredQuery !== query;
+  const isStale = deferredQuery !== query;
 
   // Prefer live DB list when available, fall back to bundled static list.
   const source = useMemo<string[]>(() => {
@@ -54,6 +68,13 @@ export const UniversityPicker = ({
     }
     return [...UNIVERSITIES];
   }, [dbUniversities]);
+
+  // Only show recents that still exist in the current source list.
+  const visibleRecents = useMemo(() => {
+    if (recents.length === 0) return [];
+    const set = new Set(source);
+    return recents.filter((r) => set.has(r));
+  }, [recents, source]);
 
   const results = useMemo<Array<{ name: string; explanation: MatchExplanation }>>(() => {
     if (!deferredQuery.trim()) {
@@ -71,6 +92,24 @@ export const UniversityPicker = ({
       )
       .slice(0, 100);
   }, [deferredQuery, source]);
+
+  // Filter recents out of main results so we don't show them twice.
+  const recentsSet = useMemo(() => new Set(visibleRecents), [visibleRecents]);
+  const showRecentsGroup = visibleRecents.length > 0;
+  const filteredResults = useMemo(
+    () => (showRecentsGroup ? results.filter((r) => !recentsSet.has(r.name)) : results),
+    [results, recentsSet, showRecentsGroup]
+  );
+
+  const handleSelect = (name: string) => {
+    onChange(name);
+    recordSelection(name);
+    setOpen(false);
+    // Clear active query so the next open starts fresh — but keep the
+    // selection in `recents` so it's still one tap away.
+    setQuery("");
+    setLastQuery("");
+  };
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -106,16 +145,55 @@ export const UniversityPicker = ({
             aria-busy={isStale}
           >
             <CommandEmpty>No university found.</CommandEmpty>
-            <CommandGroup>
-              {results.map(({ name, explanation }) => (
+
+            {showRecentsGroup && (
+              <>
+                <CommandGroup
+                  heading={
+                    <div className="flex items-center justify-between w-full">
+                      <span className="flex items-center gap-1.5">
+                        <Clock className="h-3 w-3" /> Recent
+                      </span>
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          clearHistory();
+                        }}
+                        className="text-[10px] uppercase tracking-wide text-muted-foreground hover:text-foreground"
+                      >
+                        Clear
+                      </button>
+                    </div>
+                  }
+                >
+                  {visibleRecents.map((name) => (
+                    <CommandItem
+                      key={`recent-${name}`}
+                      value={`__recent__${name}`}
+                      onSelect={() => handleSelect(name)}
+                    >
+                      <Check
+                        className={cn(
+                          "mr-2 h-4 w-4 shrink-0",
+                          value === name ? "opacity-100" : "opacity-0"
+                        )}
+                      />
+                      <span className="truncate flex-1">{name}</span>
+                    </CommandItem>
+                  ))}
+                </CommandGroup>
+                <CommandSeparator />
+              </>
+            )}
+
+            <CommandGroup heading={deferredQuery.trim() ? "Results" : "All universities"}>
+              {filteredResults.map(({ name, explanation }) => (
                 <CommandItem
                   key={name}
                   value={name}
-                  onSelect={() => {
-                    onChange(name);
-                    setOpen(false);
-                    setQuery("");
-                  }}
+                  onSelect={() => handleSelect(name)}
                   className="items-start"
                 >
                   <Check
