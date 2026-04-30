@@ -328,6 +328,42 @@ export type Database = {
           },
         ]
       }
+      universities: {
+        Row: {
+          aliases: string[] | null
+          country: string | null
+          created_at: string
+          created_by: string | null
+          id: string
+          name: string
+          normalized_name: string
+          source: string | null
+          updated_at: string
+        }
+        Insert: {
+          aliases?: string[] | null
+          country?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          name: string
+          normalized_name: string
+          source?: string | null
+          updated_at?: string
+        }
+        Update: {
+          aliases?: string[] | null
+          country?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          name?: string
+          normalized_name?: string
+          source?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           id: string
