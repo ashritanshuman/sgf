@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/popover";
 import { UNIVERSITIES } from "@/lib/universities";
 import { scoreUniversity } from "@/lib/universitySearch";
+import { useUniversities } from "@/hooks/useUniversities";
 import { useMemo } from "react";
 
 interface UniversityPickerProps {
@@ -36,16 +37,27 @@ export const UniversityPicker = ({
 }: UniversityPickerProps) => {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
+  const { universities: dbUniversities } = useUniversities();
+
+  // Prefer live DB list when available, fall back to bundled static list.
+  const source = useMemo<string[]>(() => {
+    if (dbUniversities.length > 0) {
+      const names = dbUniversities.map((u) => u.name);
+      if (!names.includes("Other")) names.push("Other");
+      return names;
+    }
+    return [...UNIVERSITIES];
+  }, [dbUniversities]);
 
   const results = useMemo(() => {
-    if (!query.trim()) return UNIVERSITIES.slice(0, 200).map((name) => ({ name, score: 1 }));
-    const scored = UNIVERSITIES
+    if (!query.trim()) return source.slice(0, 200).map((name) => ({ name, score: 1 }));
+    const scored = source
       .map((name) => ({ name, score: scoreUniversity(name, query) }))
       .filter((r) => r.score > 0)
       .sort((a, b) => b.score - a.score || a.name.localeCompare(b.name))
       .slice(0, 100);
     return scored;
-  }, [query]);
+  }, [query, source]);
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
