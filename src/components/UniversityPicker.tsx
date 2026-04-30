@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo, useDeferredValue } from "react";
 import { Check, ChevronsUpDown, Search } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -18,7 +18,7 @@ import {
 import { UNIVERSITIES } from "@/lib/universities";
 import { explainMatch, type MatchExplanation } from "@/lib/universitySearch";
 import { useUniversities } from "@/hooks/useUniversities";
-import { useMemo } from "react";
+import { useDebouncedValue } from "@/hooks/useDebouncedValue";
 
 interface UniversityPickerProps {
   value: string;
@@ -39,6 +39,12 @@ export const UniversityPicker = ({
   const [query, setQuery] = useState("");
   const { universities: dbUniversities } = useUniversities();
 
+  // Two-stage smoothing: debounce keystrokes (120ms) AND let React deprioritize
+  // the heavy ranking work so typing stays buttery on low-end mobile CPUs.
+  const debouncedQuery = useDebouncedValue(query, 120);
+  const deferredQuery = useDeferredValue(debouncedQuery);
+  const isStale = deferredQuery !== query.trim() ? false : deferredQuery !== query;
+
   // Prefer live DB list when available, fall back to bundled static list.
   const source = useMemo<string[]>(() => {
     if (dbUniversities.length > 0) {
@@ -50,21 +56,21 @@ export const UniversityPicker = ({
   }, [dbUniversities]);
 
   const results = useMemo<Array<{ name: string; explanation: MatchExplanation }>>(() => {
-    if (!query.trim()) {
+    if (!deferredQuery.trim()) {
       return source.slice(0, 200).map((name) => ({
         name,
         explanation: { score: 1, reason: "none", segments: [{ text: name, highlight: false }] },
       }));
     }
     return source
-      .map((name) => ({ name, explanation: explainMatch(name, query) }))
+      .map((name) => ({ name, explanation: explainMatch(name, deferredQuery) }))
       .filter((r) => r.explanation.score > 0)
       .sort(
         (a, b) =>
           b.explanation.score - a.explanation.score || a.name.localeCompare(b.name)
       )
       .slice(0, 100);
-  }, [query, source]);
+  }, [deferredQuery, source]);
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -95,7 +101,10 @@ export const UniversityPicker = ({
             value={query}
             onValueChange={setQuery}
           />
-          <CommandList>
+          <CommandList
+            className={cn("transition-opacity", isStale && "opacity-60")}
+            aria-busy={isStale}
+          >
             <CommandEmpty>No university found.</CommandEmpty>
             <CommandGroup>
               {results.map(({ name, explanation }) => (
