@@ -16,7 +16,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { UNIVERSITIES } from "@/lib/universities";
-import { scoreUniversity } from "@/lib/universitySearch";
+import { explainMatch, type MatchExplanation } from "@/lib/universitySearch";
 import { useUniversities } from "@/hooks/useUniversities";
 import { useMemo } from "react";
 
