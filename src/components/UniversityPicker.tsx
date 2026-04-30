@@ -101,7 +101,10 @@ export const UniversityPicker = ({
             value={query}
             onValueChange={setQuery}
           />
-          <CommandList>
+          <CommandList
+            className={cn("transition-opacity", isStale && "opacity-60")}
+            aria-busy={isStale}
+          >
             <CommandEmpty>No university found.</CommandEmpty>
             <CommandGroup>
               {results.map(({ name, explanation }) => (
