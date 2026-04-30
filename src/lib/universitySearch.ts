@@ -97,71 +97,240 @@ export interface ScoredUniversity {
   score: number;
 }
 
+export type MatchReason =
+  | "exact"
+  | "alias"
+  | "acronym"
+  | "prefix"
+  | "substring"
+  | "tokens"
+  | "fuzzy"
+  | "none";
+
+export interface MatchSegment {
+  text: string;
+  highlight: boolean;
+}
+
+export interface MatchExplanation {
+  score: number;
+  reason: MatchReason;
+  /** Short label shown next to the result (e.g. "Acronym: IIT"). */
+  label?: string;
+  /** The original name split into highlighted/non-highlighted segments. */
+  segments: MatchSegment[];
+}
+
+const STOP_WORDS = new Set(["of", "the", "and", "at", "for", "in"]);
+
+// Build segments from the ORIGINAL name string given char-index ranges
+// computed against the normalized version. We re-walk the original to map
+// normalized positions back to display positions so highlights line up.
+const buildSegments = (
+  original: string,
+  highlightRanges: Array<[number, number]>
+): MatchSegment[] => {
+  if (highlightRanges.length === 0) return [{ text: original, highlight: false }];
+
+  const normToOrig: number[] = [];
+  let lastWasSpace = true;
+  for (let i = 0; i < original.length; i++) {
+    const ch = original[i];
+    const lowered = ch
+      .toLowerCase()
+      .normalize("NFKD")
+      .replace(/[\u0300-\u036f]/g, "");
+    const isAlnum = /[a-z0-9]/.test(lowered);
+    if (isAlnum) {
+      normToOrig.push(i);
+      lastWasSpace = false;
+    } else if (!lastWasSpace) {
+      normToOrig.push(i);
+      lastWasSpace = true;
+    }
+  }
+  while (normToOrig.length && /\s/.test(original[normToOrig[normToOrig.length - 1]] ?? "")) {
+    normToOrig.pop();
+  }
+
+  const origRanges: Array<[number, number]> = [];
+  for (const [start, end] of highlightRanges) {
+    if (end <= 0 || start >= normToOrig.length) continue;
+    const s = normToOrig[Math.max(0, Math.min(start, normToOrig.length - 1))] ?? 0;
+    const e = normToOrig[Math.max(0, Math.min(end - 1, normToOrig.length - 1))] ?? original.length - 1;
+    origRanges.push([s, e + 1]);
+  }
+  origRanges.sort((a, b) => a[0] - b[0]);
+  const merged: Array<[number, number]> = [];
+  for (const r of origRanges) {
+    const last = merged[merged.length - 1];
+    if (last && r[0] <= last[1]) last[1] = Math.max(last[1], r[1]);
+    else merged.push([r[0], r[1]]);
+  }
+
+  const segs: MatchSegment[] = [];
+  let cursor = 0;
+  for (const [s, e] of merged) {
+    if (s > cursor) segs.push({ text: original.slice(cursor, s), highlight: false });
+    segs.push({ text: original.slice(s, e), highlight: true });
+    cursor = e;
+  }
+  if (cursor < original.length) segs.push({ text: original.slice(cursor), highlight: false });
+  return segs;
+};
+
+const tokenRanges = (normalized: string, qTokens: string[]): Array<[number, number]> => {
+  const ranges: Array<[number, number]> = [];
+  for (const t of qTokens) {
+    if (!t) continue;
+    let from = 0;
+    while (true) {
+      const idx = normalized.indexOf(t, from);
+      if (idx === -1) break;
+      ranges.push([idx, idx + t.length]);
+      from = idx + t.length;
+    }
+  }
+  return ranges;
+};
+
+const acronymRanges = (normalized: string, qLen: number): Array<[number, number]> => {
+  const ranges: Array<[number, number]> = [];
+  const words = normalized.split(" ");
+  let cursor = 0;
+  let taken = 0;
+  for (const w of words) {
+    if (!w) { cursor += 1; continue; }
+    if (!STOP_WORDS.has(w) && taken < qLen) {
+      ranges.push([cursor, cursor + 1]);
+      taken++;
+    }
+    cursor += w.length + 1;
+    if (taken >= qLen) break;
+  }
+  return ranges;
+};
+
 /**
- * Score a university name against a query. Higher = better. 0 = no match.
- * Tiers (approx):
- *  1000 = exact normalized match
- *  900  = alias exact match
- *  800  = acronym exact / starts-with
- *  700  = word starts-with query
- *  600  = substring match (earlier = higher)
- *  500  = acronym contains query
- *  300  = fuzzy (typo tolerant) match
+ * Explain a match: score, reason, short label, and highlight segments built
+ * against the ORIGINAL display name.
  */
-export const scoreUniversity = (name: string, query: string): number => {
+export const explainMatch = (name: string, query: string): MatchExplanation => {
   const q = normalize(query);
-  if (!q) return 1; // show all when query empty
+  if (!q) return { score: 1, reason: "none", segments: [{ text: name, highlight: false }] };
   const n = normalize(name);
-  if (!n) return 0;
+  if (!n) return { score: 0, reason: "none", segments: [{ text: name, highlight: false }] };
 
-  if (n === q) return 1000;
+  if (n === q) {
+    return {
+      score: 1000,
+      reason: "exact",
+      label: "Exact match",
+      segments: buildSegments(name, [[0, n.length]]),
+    };
+  }
 
-  // Alias check — does the query match any known alias whose expansion is in the name?
   const aliasTargets = ALIASES[q];
   if (aliasTargets) {
     for (const t of aliasTargets) {
       const tn = normalize(t);
-      if (n === tn) return 950;
-      if (n.includes(tn)) return 900;
+      const idx = n.indexOf(tn);
+      if (idx !== -1) {
+        return {
+          score: n === tn ? 950 : 900,
+          reason: "alias",
+          label: `${query.toUpperCase()} → ${t}`,
+          segments: buildSegments(name, [[idx, idx + tn.length]]),
+        };
+      }
     }
   }
 
   const acronym = acronymOf(name);
-  if (acronym === q) return 850;
-  if (acronym.startsWith(q) && q.length >= 2) return 800;
-
-  // Word starts-with
-  const words = n.split(" ");
-  for (const w of words) {
-    if (w.startsWith(q)) return 750;
+  if (acronym === q || (acronym.startsWith(q) && q.length >= 2)) {
+    return {
+      score: acronym === q ? 850 : 800,
+      reason: "acronym",
+      label: `Acronym: ${acronym.slice(0, q.length).toUpperCase()}`,
+      segments: buildSegments(name, acronymRanges(n, q.length)),
+    };
   }
 
-  // Substring — earlier match scores higher
+  const words = n.split(" ");
+  let cursor = 0;
+  for (const w of words) {
+    if (w.startsWith(q)) {
+      return {
+        score: 750,
+        reason: "prefix",
+        label: "Starts with",
+        segments: buildSegments(name, [[cursor, cursor + q.length]]),
+      };
+    }
+    cursor += w.length + 1;
+  }
+
   const idx = n.indexOf(q);
-  if (idx !== -1) return 700 - Math.min(idx, 100);
+  if (idx !== -1) {
+    return {
+      score: 700 - Math.min(idx, 100),
+      reason: "substring",
+      label: "Contains",
+      segments: buildSegments(name, [[idx, idx + q.length]]),
+    };
+  }
 
-  // Acronym contains
-  if (acronym.includes(q) && q.length >= 2) return 500;
-
-  // Each query token must appear (multi-word search like "iit bombay")
   const qTokens = q.split(" ").filter(Boolean);
   if (qTokens.length > 1 && qTokens.every((t) => n.includes(t) || acronym.includes(t))) {
-    return 600;
+    return {
+      score: 600,
+      reason: "tokens",
+      label: "All terms match",
+      segments: buildSegments(name, tokenRanges(n, qTokens.filter((t) => n.includes(t)))),
+    };
   }
 
-  // Typo tolerance — only for single-token queries of reasonable length
+  if (acronym.includes(q) && q.length >= 2) {
+    return {
+      score: 500,
+      reason: "acronym",
+      label: `Acronym: ${acronym.toUpperCase()}`,
+      segments: buildSegments(name, acronymRanges(n, acronym.length)),
+    };
+  }
+
   if (qTokens.length === 1 && q.length >= 4) {
     const max = q.length <= 5 ? 1 : q.length <= 8 ? 2 : 3;
     let best = max + 1;
+    let bestStart = -1;
+    let bestLen = 0;
+    let walker = 0;
     for (const w of words) {
+      const wStart = walker;
+      walker += w.length + 1;
       if (w.length < 3) continue;
       if (Math.abs(w.length - q.length) > max) continue;
       const d = editDistance(w, q, max);
-      if (d < best) best = d;
+      if (d < best) {
+        best = d;
+        bestStart = wStart;
+        bestLen = w.length;
+      }
       if (best === 0) break;
     }
-    if (best <= max) return 350 - best * 50;
+    if (best <= max && bestStart >= 0) {
+      return {
+        score: 350 - best * 50,
+        reason: "fuzzy",
+        label: `Did you mean… (${best} edit${best === 1 ? "" : "s"})`,
+        segments: buildSegments(name, [[bestStart, bestStart + bestLen]]),
+      };
+    }
   }
 
-  return 0;
+  return { score: 0, reason: "none", segments: [{ text: name, highlight: false }] };
 };
+
+/** Backwards-compatible numeric scorer. */
+export const scoreUniversity = (name: string, query: string): number =>
+  explainMatch(name, query).score;
