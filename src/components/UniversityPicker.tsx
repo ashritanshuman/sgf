@@ -49,14 +49,21 @@ export const UniversityPicker = ({
     return [...UNIVERSITIES];
   }, [dbUniversities]);
 
-  const results = useMemo(() => {
-    if (!query.trim()) return source.slice(0, 200).map((name) => ({ name, score: 1 }));
-    const scored = source
-      .map((name) => ({ name, score: scoreUniversity(name, query) }))
-      .filter((r) => r.score > 0)
-      .sort((a, b) => b.score - a.score || a.name.localeCompare(b.name))
+  const results = useMemo<Array<{ name: string; explanation: MatchExplanation }>>(() => {
+    if (!query.trim()) {
+      return source.slice(0, 200).map((name) => ({
+        name,
+        explanation: { score: 1, reason: "none", segments: [{ text: name, highlight: false }] },
+      }));
+    }
+    return source
+      .map((name) => ({ name, explanation: explainMatch(name, query) }))
+      .filter((r) => r.explanation.score > 0)
+      .sort(
+        (a, b) =>
+          b.explanation.score - a.explanation.score || a.name.localeCompare(b.name)
+      )
       .slice(0, 100);
-    return scored;
   }, [query, source]);
 
   return (
@@ -91,7 +98,7 @@ export const UniversityPicker = ({
           <CommandList>
             <CommandEmpty>No university found.</CommandEmpty>
             <CommandGroup>
-              {results.map(({ name }) => (
+              {results.map(({ name, explanation }) => (
                 <CommandItem
                   key={name}
                   value={name}
@@ -100,14 +107,35 @@ export const UniversityPicker = ({
                     setOpen(false);
                     setQuery("");
                   }}
+                  className="items-start"
                 >
                   <Check
                     className={cn(
-                      "mr-2 h-4 w-4",
+                      "mr-2 h-4 w-4 mt-0.5 shrink-0",
                       value === name ? "opacity-100" : "opacity-0"
                     )}
                   />
-                  <span className="truncate">{name}</span>
+                  <div className="flex-1 min-w-0">
+                    <div className="truncate">
+                      {explanation.segments.map((seg, i) =>
+                        seg.highlight ? (
+                          <mark
+                            key={i}
+                            className="bg-primary/20 text-foreground rounded px-0.5"
+                          >
+                            {seg.text}
+                          </mark>
+                        ) : (
+                          <span key={i}>{seg.text}</span>
+                        )
+                      )}
+                    </div>
+                    {query.trim() && explanation.label && (
+                      <div className="text-[11px] text-muted-foreground truncate mt-0.5">
+                        {explanation.label}
+                      </div>
+                    )}
+                  </div>
                 </CommandItem>
               ))}
             </CommandGroup>
