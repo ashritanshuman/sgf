@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
-import { GraduationCap, ArrowRight, Sparkles } from "lucide-react";
+import { GraduationCap, ArrowRight, Sparkles, MessageCircle } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import type { Tables } from "@/integrations/supabase/types";
