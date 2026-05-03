@@ -131,7 +131,7 @@ export const UniversityPicker = ({
     return out;
   }, [query, lastQuery, results]);
 
-    onChange(name);
+    const handleSelect = (name: string) => {
     recordSelection(name);
     setOpen(false);
     // Clear active query so the next open starts fresh — but keep the
