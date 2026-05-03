@@ -1,5 +1,5 @@
 import { useEffect, useState, useMemo, useDeferredValue } from "react";
-import { Check, ChevronsUpDown, Clock, Sparkles, History } from "lucide-react";
+import { Check, ChevronsUpDown, Clock, Sparkles, History, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import {
