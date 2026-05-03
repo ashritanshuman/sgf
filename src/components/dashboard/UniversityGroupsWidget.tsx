@@ -153,6 +153,14 @@ export const UniversityGroupsWidget = ({
               )}
             </div>
           )}
+
+          <button
+            onClick={() => navigate("/university-chat")}
+            className="mt-4 w-full inline-flex items-center justify-center gap-2 rounded-full border bg-background hover:bg-accent hover:text-accent-foreground transition-colors py-2 text-sm font-medium"
+          >
+            <MessageCircle className="h-4 w-4" />
+            Open {university} chat
+          </button>
         </>
       )}
     </motion.div>
