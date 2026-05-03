@@ -364,6 +364,30 @@ export type Database = {
         }
         Relationships: []
       }
+      university_messages: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          university: string
+          user_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          university: string
+          user_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          university?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           id: string
@@ -387,6 +411,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      current_user_university: { Args: never; Returns: string }
       get_group_member_profile: {
         Args: { _member_user_id: string }
         Returns: {
