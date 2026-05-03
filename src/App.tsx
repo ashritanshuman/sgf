@@ -28,6 +28,7 @@ import AIAssistant from "./pages/AIAssistant";
 import Install from "./pages/Install";
 import ResetPassword from "./pages/ResetPassword";
 import Admin from "./pages/Admin";
+import UniversityChat from "./pages/UniversityChat";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -96,6 +97,7 @@ const AppContent = () => {
             <Route path="/profile" element={<ProtectedRoute><PageTransition><Profile /></PageTransition></ProtectedRoute>} />
             <Route path="/ai-assistant" element={<ProtectedRoute><PageTransition><AIAssistant /></PageTransition></ProtectedRoute>} />
             <Route path="/admin" element={<ProtectedRoute><PageTransition><Admin /></PageTransition></ProtectedRoute>} />
+            <Route path="/university-chat" element={<ProtectedRoute><PageTransition><UniversityChat /></PageTransition></ProtectedRoute>} />
             
             {/* Redirect old auth routes */}
             <Route path="/login" element={<Navigate to="/auth" replace />} />
