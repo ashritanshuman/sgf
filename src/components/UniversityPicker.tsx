@@ -1,5 +1,5 @@
 import { useEffect, useState, useMemo, useDeferredValue } from "react";
-import { Check, ChevronsUpDown, Clock, X } from "lucide-react";
+import { Check, ChevronsUpDown, Clock, Sparkles, History } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import {
@@ -101,8 +101,37 @@ export const UniversityPicker = ({
     [results, recentsSet, showRecentsGroup]
   );
 
-  const handleSelect = (name: string) => {
-    onChange(name);
+  // Autocomplete suggestions: surface up to 5 short hints under the input
+  // so the user can complete their query in one tap. Combines a previous
+  // remembered query (when relevant) with the top matching university names.
+  const suggestions = useMemo<Array<{ text: string; kind: "history" | "match" }>>(() => {
+    const q = query.trim();
+    if (!q) return [];
+    const lower = q.toLowerCase();
+    const out: Array<{ text: string; kind: "history" | "match" }> = [];
+    const seen = new Set<string>([lower]);
+
+    const remembered = lastQuery.trim();
+    if (
+      remembered &&
+      remembered.toLowerCase() !== lower &&
+      remembered.toLowerCase().startsWith(lower)
+    ) {
+      out.push({ text: remembered, kind: "history" });
+      seen.add(remembered.toLowerCase());
+    }
+
+    for (const r of results) {
+      if (out.length >= 5) break;
+      const key = r.name.toLowerCase();
+      if (seen.has(key)) continue;
+      seen.add(key);
+      out.push({ text: r.name, kind: "match" });
+    }
+    return out;
+  }, [query, lastQuery, results]);
+
+    const handleSelect = (name: string) => {
     recordSelection(name);
     setOpen(false);
     // Clear active query so the next open starts fresh — but keep the
@@ -140,6 +169,26 @@ export const UniversityPicker = ({
             value={query}
             onValueChange={setQuery}
           />
+          {suggestions.length > 0 && (
+            <div className="flex flex-wrap gap-1.5 px-3 py-2 border-b bg-muted/30">
+              {suggestions.map((s) => (
+                <button
+                  key={`${s.kind}-${s.text}`}
+                  type="button"
+                  onClick={() => setQuery(s.text)}
+                  className="inline-flex items-center gap-1 rounded-full border bg-background px-2 py-0.5 text-[11px] text-foreground hover:bg-accent hover:text-accent-foreground transition-colors max-w-full"
+                  title={s.kind === "history" ? "From your last search" : "Tap to autocomplete"}
+                >
+                  {s.kind === "history" ? (
+                    <History className="h-3 w-3 shrink-0 opacity-70" />
+                  ) : (
+                    <Sparkles className="h-3 w-3 shrink-0 opacity-70" />
+                  )}
+                  <span className="truncate">{s.text}</span>
+                </button>
+              ))}
+            </div>
+          )}
           <CommandList
             className={cn("transition-opacity", isStale && "opacity-60")}
             aria-busy={isStale}
