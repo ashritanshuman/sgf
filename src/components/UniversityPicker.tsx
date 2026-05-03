@@ -164,11 +164,28 @@ export const UniversityPicker = ({
         align="start"
       >
         <Command shouldFilter={false}>
-          <CommandInput
-            placeholder="Search (e.g. IIT Bombay, MIT, VIT)..."
-            value={query}
-            onValueChange={setQuery}
-          />
+          <div className="relative">
+            <CommandInput
+              placeholder="Search (e.g. IIT Bombay, MIT, VIT)..."
+              value={query}
+              onValueChange={setQuery}
+            />
+            {query && (
+              <button
+                type="button"
+                onClick={() => {
+                  setQuery("");
+                  setLastQuery("");
+                }}
+                className="absolute right-2 top-1/2 -translate-y-1/2 inline-flex items-center gap-1 rounded-full border bg-background px-2 py-0.5 text-[10px] uppercase tracking-wide text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+                aria-label="Clear search query"
+                title="Clear search (keeps recent selections)"
+              >
+                <X className="h-3 w-3" />
+                Clear
+              </button>
+            )}
+          </div>
           {suggestions.length > 0 && (
             <div className="flex flex-wrap gap-1.5 px-3 py-2 border-b bg-muted/30">
               {suggestions.map((s) => (
