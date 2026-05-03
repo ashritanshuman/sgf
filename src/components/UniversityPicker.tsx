@@ -101,7 +101,36 @@ export const UniversityPicker = ({
     [results, recentsSet, showRecentsGroup]
   );
 
-  const handleSelect = (name: string) => {
+  // Autocomplete suggestions: surface up to 5 short hints under the input
+  // so the user can complete their query in one tap. Combines a previous
+  // remembered query (when relevant) with the top matching university names.
+  const suggestions = useMemo<Array<{ text: string; kind: "history" | "match" }>>(() => {
+    const q = query.trim();
+    if (!q) return [];
+    const lower = q.toLowerCase();
+    const out: Array<{ text: string; kind: "history" | "match" }> = [];
+    const seen = new Set<string>([lower]);
+
+    const remembered = lastQuery.trim();
+    if (
+      remembered &&
+      remembered.toLowerCase() !== lower &&
+      remembered.toLowerCase().startsWith(lower)
+    ) {
+      out.push({ text: remembered, kind: "history" });
+      seen.add(remembered.toLowerCase());
+    }
+
+    for (const r of results) {
+      if (out.length >= 5) break;
+      const key = r.name.toLowerCase();
+      if (seen.has(key)) continue;
+      seen.add(key);
+      out.push({ text: r.name, kind: "match" });
+    }
+    return out;
+  }, [query, lastQuery, results]);
+
     onChange(name);
     recordSelection(name);
     setOpen(false);
