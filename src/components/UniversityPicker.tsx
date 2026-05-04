@@ -187,13 +187,30 @@ export const UniversityPicker = ({
             )}
           </div>
           {suggestions.length > 0 && (
-            <div className="flex flex-wrap gap-1.5 px-3 py-2 border-b bg-muted/30">
+            <div
+              role="listbox"
+              aria-label="Search suggestions"
+              className="flex flex-wrap gap-1.5 px-3 py-2 border-b bg-muted/30"
+            >
               {suggestions.map((s) => (
                 <button
                   key={`${s.kind}-${s.text}`}
                   type="button"
+                  role="option"
+                  aria-selected={query === s.text}
+                  aria-label={
+                    s.kind === "history"
+                      ? `Use previous search: ${s.text}`
+                      : `Autocomplete to ${s.text}`
+                  }
                   onClick={() => setQuery(s.text)}
-                  className="inline-flex items-center gap-1 rounded-full border bg-background px-2 py-0.5 text-[11px] text-foreground hover:bg-accent hover:text-accent-foreground transition-colors max-w-full"
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      setQuery(s.text);
+                    }
+                  }}
+                  className="inline-flex items-center gap-1 rounded-full border bg-background px-2 py-0.5 text-[11px] text-foreground hover:bg-accent hover:text-accent-foreground transition-colors max-w-full focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background"
                   title={s.kind === "history" ? "From your last search" : "Tap to autocomplete"}
                 >
                   {s.kind === "history" ? (
