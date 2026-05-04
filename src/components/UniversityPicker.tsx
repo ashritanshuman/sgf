@@ -1,4 +1,5 @@
 import { useEffect, useState, useMemo, useDeferredValue } from "react";
+import { AnimatePresence, motion } from "framer-motion";
 import { Check, ChevronsUpDown, Clock, Sparkles, History, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -170,21 +171,28 @@ export const UniversityPicker = ({
               value={query}
               onValueChange={setQuery}
             />
-            {query && (
-              <button
-                type="button"
-                onClick={() => {
-                  setQuery("");
-                  setLastQuery("");
-                }}
-                className="absolute right-2 top-1/2 -translate-y-1/2 inline-flex items-center gap-1 rounded-full border bg-background px-2 py-0.5 text-[10px] uppercase tracking-wide text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
-                aria-label="Clear search query"
-                title="Clear search (keeps recent selections)"
-              >
-                <X className="h-3 w-3" />
-                Clear
-              </button>
-            )}
+            <AnimatePresence initial={false}>
+              {query && (
+                <motion.button
+                  key="clear-query"
+                  type="button"
+                  initial={{ opacity: 0, scale: 0.85 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.85 }}
+                  transition={{ duration: 0.15, ease: "easeOut" }}
+                  onClick={() => {
+                    setQuery("");
+                    setLastQuery("");
+                  }}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 inline-flex items-center gap-1 rounded-full border bg-background px-2 py-0.5 text-[10px] uppercase tracking-wide text-muted-foreground hover:text-foreground hover:bg-accent transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background"
+                  aria-label="Clear search query"
+                  title="Clear search (keeps recent selections)"
+                >
+                  <X className="h-3 w-3" />
+                  Clear
+                </motion.button>
+              )}
+            </AnimatePresence>
           </div>
           {suggestions.length > 0 && (
             <div
