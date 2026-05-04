@@ -297,3 +297,102 @@ export const UniversityPicker = ({
     </Popover>
   );
 };
+
+interface SuggestionStripProps {
+  suggestions: Array<{ text: string; kind: "history" | "match" }>;
+  query: string;
+  onPick: (text: string) => void;
+}
+
+const SuggestionStrip = ({ suggestions, query, onPick }: SuggestionStripProps) => {
+  const [activeIndex, setActiveIndex] = useState(-1);
+  const btnRefs = useRef<Array<HTMLButtonElement | null>>([]);
+  const listId = "uni-picker-suggestions";
+
+  // Reset active when the suggestion list changes underneath us.
+  useEffect(() => {
+    setActiveIndex(-1);
+  }, [suggestions.map((s) => `${s.kind}:${s.text}`).join("|")]);
+
+  // Keep DOM focus + screen-reader announcement in sync with active chip.
+  useEffect(() => {
+    if (activeIndex < 0) return;
+    btnRefs.current[activeIndex]?.focus();
+  }, [activeIndex]);
+
+  const move = (delta: number, e: React.KeyboardEvent) => {
+    e.preventDefault();
+    setActiveIndex((prev) => {
+      const n = suggestions.length;
+      if (n === 0) return -1;
+      const base = prev < 0 ? (delta > 0 ? -1 : 0) : prev;
+      return (base + delta + n) % n;
+    });
+  };
+
+  const activeId =
+    activeIndex >= 0 ? `${listId}-opt-${activeIndex}` : undefined;
+
+  return (
+    <div
+      role="listbox"
+      id={listId}
+      aria-label="Search suggestions"
+      aria-activedescendant={activeId}
+      className="flex flex-wrap gap-1.5 px-3 py-2 border-b bg-muted/30"
+    >
+      {suggestions.map((s, i) => {
+        const isActive = i === activeIndex;
+        return (
+          <button
+            key={`${s.kind}-${s.text}`}
+            id={`${listId}-opt-${i}`}
+            ref={(el) => (btnRefs.current[i] = el)}
+            type="button"
+            role="option"
+            tabIndex={isActive || (activeIndex < 0 && i === 0) ? 0 : -1}
+            aria-selected={isActive || query === s.text}
+            aria-label={
+              s.kind === "history"
+                ? `Use previous search: ${s.text}`
+                : `Autocomplete to ${s.text}`
+            }
+            onFocus={() => setActiveIndex(i)}
+            onClick={() => onPick(s.text)}
+            onKeyDown={(e) => {
+              if (e.key === "ArrowDown" || e.key === "ArrowRight") move(1, e);
+              else if (e.key === "ArrowUp" || e.key === "ArrowLeft") move(-1, e);
+              else if (e.key === "Home") {
+                e.preventDefault();
+                setActiveIndex(0);
+              } else if (e.key === "End") {
+                e.preventDefault();
+                setActiveIndex(suggestions.length - 1);
+              } else if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                onPick(s.text);
+              }
+            }}
+            className={cn(
+              "inline-flex items-center gap-1 rounded-full border bg-background px-2 py-0.5 text-[11px] text-foreground hover:bg-accent hover:text-accent-foreground transition-colors max-w-full focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background",
+              isActive && "ring-2 ring-ring ring-offset-1 ring-offset-background"
+            )}
+            title={s.kind === "history" ? "From your last search" : "Tap to autocomplete"}
+          >
+            {s.kind === "history" ? (
+              <History aria-hidden="true" className="h-3 w-3 shrink-0 opacity-70" />
+            ) : (
+              <Sparkles aria-hidden="true" className="h-3 w-3 shrink-0 opacity-70" />
+            )}
+            <span className="truncate">{s.text}</span>
+          </button>
+        );
+      })}
+      <span className="sr-only" aria-live="polite">
+        {activeIndex >= 0 && suggestions[activeIndex]
+          ? `Suggestion ${activeIndex + 1} of ${suggestions.length}: ${suggestions[activeIndex].text}`
+          : ""}
+      </span>
+    </div>
+  );
+};
