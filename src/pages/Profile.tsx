@@ -12,6 +12,7 @@ import { useStudyProgress } from "@/hooks/useStudyProgress";
 import { useStudyGroups } from "@/hooks/useStudyGroups";
 import { useNavigate } from "react-router-dom";
 import { UniversityPicker } from "@/components/UniversityPicker";
+import { ReduceMotionToggle } from "@/components/ReduceMotionToggle";
 
 const Profile = () => {
   const navigate = useNavigate();
