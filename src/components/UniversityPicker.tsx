@@ -105,8 +105,12 @@ export const UniversityPicker = ({
   // Autocomplete suggestions: surface up to 5 short hints under the input
   // so the user can complete their query in one tap. Combines a previous
   // remembered query (when relevant) with the top matching university names.
+  // Debounce suggestion input separately so the strip doesn't thrash on every
+  // keystroke. Slightly longer than the results debounce — suggestions are
+  // secondary UI and benefit from waiting for the user to settle.
+  const suggestionQuery = useDebouncedValue(query, 180);
   const suggestions = useMemo<Array<{ text: string; kind: "history" | "match" }>>(() => {
-    const q = query.trim();
+    const q = suggestionQuery.trim();
     if (!q) return [];
     const lower = q.toLowerCase();
     const out: Array<{ text: string; kind: "history" | "match" }> = [];
@@ -130,7 +134,7 @@ export const UniversityPicker = ({
       out.push({ text: r.name, kind: "match" });
     }
     return out;
-  }, [query, lastQuery, results]);
+  }, [suggestionQuery, lastQuery, results]);
 
     const handleSelect = (name: string) => {
     recordSelection(name);
