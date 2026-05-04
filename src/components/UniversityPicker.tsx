@@ -22,6 +22,7 @@ import { explainMatch, type MatchExplanation } from "@/lib/universitySearch";
 import { useUniversities } from "@/hooks/useUniversities";
 import { useDebouncedValue } from "@/hooks/useDebouncedValue";
 import { useUniversityPickerHistory } from "@/hooks/useUniversityPickerHistory";
+import { useReducedMotion } from "@/hooks/useReducedMotion";
 
 interface UniversityPickerProps {
   value: string;
