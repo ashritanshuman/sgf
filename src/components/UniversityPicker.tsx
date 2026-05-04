@@ -214,9 +214,9 @@ export const UniversityPicker = ({
                   title={s.kind === "history" ? "From your last search" : "Tap to autocomplete"}
                 >
                   {s.kind === "history" ? (
-                    <History className="h-3 w-3 shrink-0 opacity-70" />
+                    <History aria-hidden="true" className="h-3 w-3 shrink-0 opacity-70" />
                   ) : (
-                    <Sparkles className="h-3 w-3 shrink-0 opacity-70" />
+                    <Sparkles aria-hidden="true" className="h-3 w-3 shrink-0 opacity-70" />
                   )}
                   <span className="truncate">{s.text}</span>
                 </button>
