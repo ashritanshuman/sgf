@@ -42,6 +42,7 @@ export const UniversityPicker = ({
   const [open, setOpen] = useState(false);
   const { lastQuery, setLastQuery, recents, recordSelection, clearHistory } =
     useUniversityPickerHistory();
+  const { reduceMotion } = useReducedMotion();
 
   // Restore the last query on first mount so reopening picks up where you left off.
   const [query, setQuery] = useState(lastQuery);
