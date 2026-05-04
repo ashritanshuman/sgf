@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo, useDeferredValue } from "react";
+import { useEffect, useRef, useState, useMemo, useDeferredValue } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Check, ChevronsUpDown, Clock, Sparkles, History, X } from "lucide-react";
 import { cn } from "@/lib/utils";
