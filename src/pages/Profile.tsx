@@ -12,6 +12,7 @@ import { useStudyProgress } from "@/hooks/useStudyProgress";
 import { useStudyGroups } from "@/hooks/useStudyGroups";
 import { useNavigate } from "react-router-dom";
 import { UniversityPicker } from "@/components/UniversityPicker";
+import { ReduceMotionToggle } from "@/components/ReduceMotionToggle";
 
 const Profile = () => {
   const navigate = useNavigate();
@@ -481,6 +482,7 @@ const Profile = () => {
                   <Target className="h-4 w-4 mr-2" />
                   View Progress
                 </Button>
+                <ReduceMotionToggle className="pt-2" />
               </div>
             </motion.div>
           </div>
