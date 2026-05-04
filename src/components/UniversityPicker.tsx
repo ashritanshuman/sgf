@@ -182,10 +182,10 @@ export const UniversityPicker = ({
                 <motion.button
                   key="clear-query"
                   type="button"
-                  initial={{ opacity: 0, scale: 0.85 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.85 }}
-                  transition={{ duration: 0.15, ease: "easeOut" }}
+                  initial={reduceMotion ? false : { opacity: 0, scale: 0.85 }}
+                  animate={reduceMotion ? { opacity: 1, scale: 1 } : { opacity: 1, scale: 1 }}
+                  exit={reduceMotion ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.85 }}
+                  transition={reduceMotion ? { duration: 0 } : { duration: 0.15, ease: "easeOut" }}
                   onClick={() => {
                     setQuery("");
                     setLastQuery("");
