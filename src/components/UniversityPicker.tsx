@@ -54,6 +54,21 @@ export const UniversityPicker = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [persistedQuery]);
 
+  // Escape clears the current query (keeps recents).
+  useEffect(() => {
+    if (!open) return;
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && query) {
+        e.preventDefault();
+        e.stopPropagation();
+        setQuery("");
+        setLastQuery("");
+      }
+    };
+    document.addEventListener("keydown", handler, true);
+    return () => document.removeEventListener("keydown", handler, true);
+  }, [open, query, setLastQuery]);
+
   const { universities: dbUniversities } = useUniversities();
 
   // Two-stage smoothing: debounce keystrokes (120ms) AND let React deprioritize
