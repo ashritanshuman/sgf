@@ -64,6 +64,9 @@ export const UniversityPicker = ({
         e.stopPropagation();
         setQuery("");
         setLastQuery("");
+        toast.success("Search cleared", {
+          description: "Recent selections kept.",
+        });
       }
     };
     document.addEventListener("keydown", handler, true);
