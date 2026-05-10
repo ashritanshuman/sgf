@@ -203,7 +203,16 @@ export const UniversityPicker = ({
           )}
         >
           <span className="truncate text-left">{value || placeholder}</span>
-          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+          <div className="flex items-center gap-1.5">
+            {!value && (
+              <kbd className="hidden sm:inline-flex items-center rounded border bg-muted px-1.5 py-0.5 text-[10px] font-mono text-muted-foreground">
+                {typeof navigator !== "undefined" && navigator.platform?.includes("Mac")
+                  ? "⌘K"
+                  : "Ctrl K"}
+              </kbd>
+            )}
+            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+          </div>
         </Button>
       </PopoverTrigger>
       <PopoverContent
