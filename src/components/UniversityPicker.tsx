@@ -41,6 +41,7 @@ export const UniversityPicker = ({
   className,
 }: UniversityPickerProps) => {
   const [open, setOpen] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
   const { lastQuery, setLastQuery, recents, recordSelection, clearHistory } =
     useUniversityPickerHistory();
   const { reduceMotion } = useReducedMotion();
