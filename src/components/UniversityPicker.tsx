@@ -222,6 +222,7 @@ export const UniversityPicker = ({
         <Command shouldFilter={false}>
           <div className="relative">
             <CommandInput
+              ref={inputRef}
               placeholder="Search (e.g. IIT Bombay, MIT, VIT)..."
               value={query}
               onValueChange={setQuery}
