@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, useMemo, useDeferredValue } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Check, ChevronsUpDown, Clock, Sparkles, History, X } from "lucide-react";
+import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import {
@@ -63,6 +64,9 @@ export const UniversityPicker = ({
         e.stopPropagation();
         setQuery("");
         setLastQuery("");
+        toast.success("Search cleared", {
+          description: "Recent selections kept.",
+        });
       }
     };
     document.addEventListener("keydown", handler, true);
