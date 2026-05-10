@@ -74,6 +74,26 @@ export const UniversityPicker = ({
     return () => document.removeEventListener("keydown", handler, true);
   }, [open, query, setLastQuery]);
 
+  // Global Ctrl/Cmd+K opens and focuses the picker.
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === "k" && (e.metaKey || e.ctrlKey)) {
+        e.preventDefault();
+        setOpen(true);
+      }
+    };
+    document.addEventListener("keydown", handler);
+    return () => document.removeEventListener("keydown", handler);
+  }, []);
+
+  // Focus the search input whenever the popover opens.
+  useEffect(() => {
+    if (open) {
+      const id = requestAnimationFrame(() => inputRef.current?.focus());
+      return () => cancelAnimationFrame(id);
+    }
+  }, [open]);
+
   const { universities: dbUniversities } = useUniversities();
 
   // Two-stage smoothing: debounce keystrokes (120ms) AND let React deprioritize
