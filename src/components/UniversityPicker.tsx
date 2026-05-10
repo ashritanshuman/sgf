@@ -63,10 +63,19 @@ export const UniversityPicker = ({
       if (e.key === "Escape" && query) {
         e.preventDefault();
         e.stopPropagation();
+        const previous = query;
         setQuery("");
         setLastQuery("");
         toast.success("Search cleared", {
           description: "Recent selections kept.",
+          action: {
+            label: "Undo",
+            onClick: () => {
+              setQuery(previous);
+              setLastQuery(previous);
+              inputRef.current?.focus();
+            },
+          },
         });
       }
     };
