@@ -41,6 +41,7 @@ export const UniversityPicker = ({
   className,
 }: UniversityPickerProps) => {
   const [open, setOpen] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
   const { lastQuery, setLastQuery, recents, recordSelection, clearHistory } =
     useUniversityPickerHistory();
   const { reduceMotion } = useReducedMotion();
@@ -72,6 +73,26 @@ export const UniversityPicker = ({
     document.addEventListener("keydown", handler, true);
     return () => document.removeEventListener("keydown", handler, true);
   }, [open, query, setLastQuery]);
+
+  // Global Ctrl/Cmd+K opens and focuses the picker.
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === "k" && (e.metaKey || e.ctrlKey)) {
+        e.preventDefault();
+        setOpen(true);
+      }
+    };
+    document.addEventListener("keydown", handler);
+    return () => document.removeEventListener("keydown", handler);
+  }, []);
+
+  // Focus the search input whenever the popover opens.
+  useEffect(() => {
+    if (open) {
+      const id = requestAnimationFrame(() => inputRef.current?.focus());
+      return () => cancelAnimationFrame(id);
+    }
+  }, [open]);
 
   const { universities: dbUniversities } = useUniversities();
 
@@ -182,7 +203,16 @@ export const UniversityPicker = ({
           )}
         >
           <span className="truncate text-left">{value || placeholder}</span>
-          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+          <div className="flex items-center gap-1.5">
+            {!value && (
+              <kbd className="hidden sm:inline-flex items-center rounded border bg-muted px-1.5 py-0.5 text-[10px] font-mono text-muted-foreground">
+                {typeof navigator !== "undefined" && navigator.platform?.includes("Mac")
+                  ? "⌘K"
+                  : "Ctrl K"}
+              </kbd>
+            )}
+            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+          </div>
         </Button>
       </PopoverTrigger>
       <PopoverContent
@@ -192,6 +222,7 @@ export const UniversityPicker = ({
         <Command shouldFilter={false}>
           <div className="relative">
             <CommandInput
+              ref={inputRef}
               placeholder="Search (e.g. IIT Bombay, MIT, VIT)..."
               value={query}
               onValueChange={setQuery}
