@@ -72,6 +72,12 @@ export const UniversityPicker = ({
         const previous = query;
         setQuery("");
         setLastQuery("");
+        // Keep keyboard focus on the search input so the user can keep typing
+        // without having to tab back into the picker.
+        inputRef.current?.focus();
+        setAnnouncement(
+          "Search query cleared. Recent selections kept. Activate Undo on the notification to restore."
+        );
         toast.success("Search cleared", {
           description: "Recent selections kept.",
           action: {
@@ -80,6 +86,7 @@ export const UniversityPicker = ({
               setQuery(previous);
               setLastQuery(previous);
               inputRef.current?.focus();
+              setAnnouncement("Search query restored.");
             },
           },
         });
