@@ -378,6 +378,7 @@ export const UniversityPicker = ({
         </Command>
       </PopoverContent>
     </Popover>
+    </>
   );
 };
 
