@@ -210,7 +210,16 @@ export const UniversityPicker = ({
   };
 
   return (
-    <Popover open={open} onOpenChange={setOpen}>
+    <>
+      <span
+        role="status"
+        aria-live="polite"
+        aria-atomic="true"
+        className="sr-only"
+      >
+        {announcement}
+      </span>
+      <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         <Button
           id={id}
