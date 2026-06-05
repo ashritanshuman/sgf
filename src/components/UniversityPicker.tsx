@@ -219,7 +219,7 @@ export const UniversityPicker = ({
       >
         {announcement}
       </span>
-      <Popover open={open} onOpenChange={setOpen}>
+      <Popover open={open} onOpenChange={setOpen} modal>
       <PopoverTrigger asChild>
         <Button
           id={id}
