@@ -48,12 +48,6 @@ export const UniversityPicker = ({
   // Restore the last query on first mount so reopening picks up where you left off.
   const [query, setQuery] = useState(lastQuery);
 
-  // Live-region announcement for screen readers when Esc clears the query.
-  // Sonner toasts have their own live region, but we also mirror the message
-  // here so the announcement is reliably tied to the picker's own context and
-  // is not missed if the toast region is busy.
-  const [announcement, setAnnouncement] = useState("");
-
   // Persist query (debounced) so it survives reloads without thrashing storage.
   const persistedQuery = useDebouncedValue(query, 250);
   useEffect(() => {
