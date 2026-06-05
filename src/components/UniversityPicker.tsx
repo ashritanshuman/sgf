@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState, useMemo, useDeferredValue } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Check, ChevronsUpDown, Clock, Sparkles, History, X } from "lucide-react";
-import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import {
@@ -49,12 +48,6 @@ export const UniversityPicker = ({
   // Restore the last query on first mount so reopening picks up where you left off.
   const [query, setQuery] = useState(lastQuery);
 
-  // Live-region announcement for screen readers when Esc clears the query.
-  // Sonner toasts have their own live region, but we also mirror the message
-  // here so the announcement is reliably tied to the picker's own context and
-  // is not missed if the toast region is busy.
-  const [announcement, setAnnouncement] = useState("");
-
   // Persist query (debounced) so it survives reloads without thrashing storage.
   const persistedQuery = useDebouncedValue(query, 250);
   useEffect(() => {
@@ -62,39 +55,6 @@ export const UniversityPicker = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [persistedQuery]);
 
-  // Escape clears the current query (keeps recents).
-  useEffect(() => {
-    if (!open) return;
-    const handler = (e: KeyboardEvent) => {
-      if (e.key === "Escape" && query) {
-        e.preventDefault();
-        e.stopPropagation();
-        const previous = query;
-        setQuery("");
-        setLastQuery("");
-        // Keep keyboard focus on the search input so the user can keep typing
-        // without having to tab back into the picker.
-        inputRef.current?.focus();
-        setAnnouncement(
-          "Search query cleared. Recent selections kept. Activate Undo on the notification to restore."
-        );
-        toast.success("Search cleared", {
-          description: "Recent selections kept.",
-          action: {
-            label: "Undo",
-            onClick: () => {
-              setQuery(previous);
-              setLastQuery(previous);
-              inputRef.current?.focus();
-              setAnnouncement("Search query restored.");
-            },
-          },
-        });
-      }
-    };
-    document.addEventListener("keydown", handler, true);
-    return () => document.removeEventListener("keydown", handler, true);
-  }, [open, query, setLastQuery]);
 
   // Global Ctrl/Cmd+K opens and focuses the picker.
   useEffect(() => {
@@ -211,14 +171,6 @@ export const UniversityPicker = ({
 
   return (
     <>
-      <span
-        role="status"
-        aria-live="polite"
-        aria-atomic="true"
-        className="sr-only"
-      >
-        {announcement}
-      </span>
       <Popover open={open} onOpenChange={setOpen} modal>
       <PopoverTrigger asChild>
         <Button
