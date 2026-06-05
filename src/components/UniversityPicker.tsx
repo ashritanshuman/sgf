@@ -55,39 +55,6 @@ export const UniversityPicker = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [persistedQuery]);
 
-  // Escape clears the current query (keeps recents).
-  useEffect(() => {
-    if (!open) return;
-    const handler = (e: KeyboardEvent) => {
-      if (e.key === "Escape" && query) {
-        e.preventDefault();
-        e.stopPropagation();
-        const previous = query;
-        setQuery("");
-        setLastQuery("");
-        // Keep keyboard focus on the search input so the user can keep typing
-        // without having to tab back into the picker.
-        inputRef.current?.focus();
-        setAnnouncement(
-          "Search query cleared. Recent selections kept. Activate Undo on the notification to restore."
-        );
-        toast.success("Search cleared", {
-          description: "Recent selections kept.",
-          action: {
-            label: "Undo",
-            onClick: () => {
-              setQuery(previous);
-              setLastQuery(previous);
-              inputRef.current?.focus();
-              setAnnouncement("Search query restored.");
-            },
-          },
-        });
-      }
-    };
-    document.addEventListener("keydown", handler, true);
-    return () => document.removeEventListener("keydown", handler, true);
-  }, [open, query, setLastQuery]);
 
   // Global Ctrl/Cmd+K opens and focuses the picker.
   useEffect(() => {
