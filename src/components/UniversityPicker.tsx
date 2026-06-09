@@ -343,10 +343,16 @@ export const UniversityPicker = ({
               ))}
             </CommandGroup>
           </CommandList>
+          <span className="sr-only" role="status" aria-live="polite" aria-atomic="true">
+            {open && highlightedLabel && highlightedIndex >= 0
+              ? `${highlightedLabel}, option ${highlightedIndex + 1} of ${orderedNames.length}`
+              : ""}
+          </span>
         </Command>
       </PopoverContent>
     </Popover>
     </>
+
   );
 };
 
