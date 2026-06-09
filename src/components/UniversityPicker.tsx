@@ -218,7 +218,7 @@ export const UniversityPicker = ({
         className="w-[--radix-popover-trigger-width] p-0 z-50 bg-popover"
         align="start"
       >
-        <Command shouldFilter={false}>
+        <Command shouldFilter={false} value={highlighted} onValueChange={setHighlighted}>
           <div className="relative">
             <CommandInput
               ref={inputRef}
