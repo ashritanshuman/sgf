@@ -169,6 +169,22 @@ export const UniversityPicker = ({
     setLastQuery("");
   };
 
+  // Track the highlighted command item so we can mirror it into a polite
+  // live region. cmdk already sets aria-activedescendant on the input and
+  // listbox; this controlled value lets us also announce *which* option
+  // the user has moved to as they arrow through the list.
+  const [highlighted, setHighlighted] = useState<string>("");
+  const orderedNames = useMemo(() => {
+    const recentValues = visibleRecents.map((n) => `__recent__${n}`);
+    const resultValues = filteredResults.map((r) => r.name);
+    return [...recentValues, ...resultValues];
+  }, [visibleRecents, filteredResults]);
+  const highlightedIndex = highlighted ? orderedNames.indexOf(highlighted) : -1;
+  const highlightedLabel = highlighted.startsWith("__recent__")
+    ? highlighted.slice("__recent__".length)
+    : highlighted;
+
+
   return (
     <>
       <Popover open={open} onOpenChange={setOpen} modal>
@@ -202,7 +218,7 @@ export const UniversityPicker = ({
         className="w-[--radix-popover-trigger-width] p-0 z-50 bg-popover"
         align="start"
       >
-        <Command shouldFilter={false}>
+        <Command shouldFilter={false} value={highlighted} onValueChange={setHighlighted}>
           <div className="relative">
             <CommandInput
               ref={inputRef}
@@ -327,10 +343,16 @@ export const UniversityPicker = ({
               ))}
             </CommandGroup>
           </CommandList>
+          <span className="sr-only" role="status" aria-live="polite" aria-atomic="true">
+            {open && highlightedLabel && highlightedIndex >= 0
+              ? `${highlightedLabel}, option ${highlightedIndex + 1} of ${orderedNames.length}`
+              : ""}
+          </span>
         </Command>
       </PopoverContent>
     </Popover>
     </>
+
   );
 };
 
